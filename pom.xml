@@ -10,6 +10,7 @@
     <version>1.0.0</version>
     <modules>
         <module>standard-protocol</module>
+        <module>springboot-redis</module>
     </modules>
 
     <!--起步工具包依赖项，提供了很多默认的配置，控制了所有依赖的版本号-->
@@ -20,6 +21,18 @@
     <!--</parent>-->
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/junit/junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.47</version>
+        </dependency>
 
     </dependencies>
 
