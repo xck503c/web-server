@@ -129,24 +129,44 @@ public class RedisPool {
             if(list.size()>limit){
                 jedis = getJedis();
                 Pipeline pipeline = jedis.pipelined();
+
+                List<List<String>> allBatchList = new ArrayList<List<String>>();
+                List<String> batchList = new ArrayList<String>();
+
                 List<String> tmp = new ArrayList<String>(limit);
                 for(int i=0; i<list.size(); i++){
                     tmp.add(list.get(i));
+                    batchList.add(list.get(i));
                     if((i+1)%limit == 0){
-                        if((list.size()-i+1) < (limit/4)){
-                            while (++i<list.size()){
-                                tmp.add(list.get(i));
-                            }
-
-                        }
                         pipeline.lpush(listKey, tmp.toArray(new String[tmp.size()]));
                         tmp.clear();
+                        allBatchList.add(batchList);
+                        batchList = new ArrayList<String>();
                     }
                 }
                 if(tmp.size()>0){
                     pipeline.lpush(listKey, tmp.toArray(new String[tmp.size()]));
+                    tmp.clear();
+                    allBatchList.add(batchList);
                 }
-                pipeline.sync();
+                List<Object> results = pipeline.syncAndReturnAll();
+                List<Object> deleteList = new ArrayList<Object>();
+                for(int i=0; i<results.size(); i++){
+                    Long r = (Long)results.get(i);
+                    if(r > 0){
+                        deleteList.add(allBatchList.get(i));
+                    }
+                }
+                for(Object deleteO : deleteList){
+                    allBatchList.remove(deleteO);
+                }
+                list.clear();
+                for(List<String> l : allBatchList){
+                    list.addAll(l);
+                }
+                if(list.size() > 0){
+                    System.out.println(list.size() + " fail");
+                }
             }else {
                 String[] arr = new String[list.size()];
                 for(int i=0; i<list.size(); i++){
@@ -169,6 +189,10 @@ public class RedisPool {
             long len = jedis.llen(listKey);
             if(len <= 0) return new ArrayList<String>();
             else if(len < count) count = len;
+
+            if(count > len){
+
+            }
 
             Transaction transaction = jedis.multi();
             Response<List<String>> response = transaction.lrange(listKey, -count, -1);
@@ -236,5 +260,12 @@ public class RedisPool {
             returnJedis(jedis);
         }
         return 0L;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(26276+13535+30509+30083+84628+174824
+                +48872+32474+13069+44982+424678+129090+141576+261303+315665+113995
+                +74988+321375+93941+40365+57183+6594+8187+162675+195823+102170
+                +29411+78405+83915+254084);
     }
 }

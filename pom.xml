@@ -11,6 +11,7 @@
     <modules>
         <module>standard-protocol</module>
         <module>springboot-redis</module>
+        <module>data-transfer-service</module>
     </modules>
 
     <!--起步工具包依赖项，提供了很多默认的配置，控制了所有依赖的版本号-->
@@ -32,6 +33,11 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.47</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.3</version>
         </dependency>
 
     </dependencies>

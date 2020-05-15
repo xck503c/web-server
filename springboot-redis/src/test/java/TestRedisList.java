@@ -2,6 +2,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.xck.form.TestClass;
 import com.xck.redis.RedisPool;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,7 +24,7 @@ public class TestRedisList {
         RedisPool pool = new RedisPool();
 
         List<String> list = new ArrayList<String>();
-        for(int i=0; i<1100; i++){
+        for(int i=0; i<4000; i++){
             list.add(JSONObject.toJSONString(new TestClass("徐成昆", i)));
         }
 
@@ -31,9 +34,35 @@ public class TestRedisList {
     @Test
     public void testPopMulit(){
         RedisPool pool = new RedisPool();
-        List<String> list = pool.popMulitTransac(listKey, 500);
+        List<String> list = pool.popMulitTransac(listKey, 1);
         System.out.println(list);
         System.out.println(list.size());
+    }
+
+    @Test
+    public void popAll(){
+        RedisPool pool = new RedisPool();
+        Jedis jedis = pool.getJedis();
+        List<Response<List<String>>> result = new ArrayList<Response<List<String>>>();
+        try {
+            Pipeline pipeline = jedis.pipelined();
+            pipeline.multi();
+            Response<List<String>> response = pipeline.lrange(listKey, -10, -1);
+            pipeline.ltrim(listKey, 0, -11);
+            result.add(response);
+            pipeline.exec();
+            pipeline.multi();
+            Response<List<String>> response1 = pipeline.lrange(listKey, -10, -1);
+            result.add(response1);
+            pipeline.exec();
+            pipeline.sync();
+        } finally {
+            pool.returnJedis(jedis);
+        }
+        for(Response<List<String>> responseTmp : result){
+            List<String> tmp = responseTmp.get();
+            System.out.println(tmp.size());
+        }
     }
 
     @Test
