@@ -20,7 +20,7 @@ public class TestDBOper {
     @Test
     public void transferData(){
         ThreadPoolTransferThread thread = new ThreadPoolTransferThread(new MissionConfig());
-        thread.transferData("bak", "3,999,1000");
+//        thread.transferData("bak", "3,999,1000");
     }
 
     @Test
