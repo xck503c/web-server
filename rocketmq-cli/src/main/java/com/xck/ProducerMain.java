@@ -1,7 +1,6 @@
 package com.xck;
 
 import com.alibaba.fastjson.JSONObject;
-import com.xck.submithissave.SubmitHistoryDataSaveDBConsumer;
 import com.xck.submithissave.SubmitHistoryDataSaveDBProducer;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -18,17 +17,15 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Main {
+public class ProducerMain {
 
     private static SubmitHistoryDataSaveDBProducer producer = new SubmitHistoryDataSaveDBProducer();
-    private static SubmitHistoryDataSaveDBConsumer consumer = new SubmitHistoryDataSaveDBConsumer();
 
-    private static CountDownLatch latch = new CountDownLatch(5);
+    private static CountDownLatch latch = new CountDownLatch(1);
 
     public static void main(String[] args) {
         producer.init();
-        consumer.init();
-        for(int i=0; i<5; i++){
+        for(int i=0; i<1; i++){
             new Thread(new ProducerRunnable()).start();
         }
     }
@@ -43,18 +40,22 @@ public class Main {
                 e.printStackTrace();
             }
             DefaultMQProducer mqProducer = producer.getDefaultMQProducer();
-            for (int count = 0; count<1; count++) {
+            int j =0;
+            for (int count = 0; count<80; count++) {
                 try {
                     List<Message> list = new ArrayList<Message>();
-                    for(int i=0; i<1; i++){
-                        list.add(new Message("hisDataSaveDB", "submitSmsData", getMsgJson()));
+                    for(int i=0; i<10; i++){
+//                        list.add(new Message("hisDataSaveDB", "submitSmsData", getMsgJson()));
+                        String msgStr = ""+j;
+                        list.add(new Message("hisDataSaveDB", "submitSmsData", msgStr.getBytes()));
+                        j++;
                     }
                     SendResult result = mqProducer.send(list);
                     System.out.println("发送结果: " + result.getSendStatus().name()
                             + ", 主题: " + result.getMessageQueue().getTopic()
                             +", 入队: queueId=" + result.getMessageQueue().getQueueId()
                             + ", 放入borker: " + result.getMessageQueue().getBrokerName());
-                    System.out.println("发送 " + sendnum.getAndAdd(1000));
+                    System.out.println("发送 " + sendnum.getAndAdd(list.size()));
                     Thread.sleep(100);
                 } catch (MQClientException e) {
                     e.printStackTrace();

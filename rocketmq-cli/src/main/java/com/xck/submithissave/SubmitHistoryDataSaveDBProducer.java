@@ -15,6 +15,7 @@ public class SubmitHistoryDataSaveDBProducer {
         defaultMQProducer.setNamesrvAddr(namesrvAddr);
         defaultMQProducer.setSendMsgTimeout(6000);
         defaultMQProducer.setRetryTimesWhenSendFailed(3);
+        defaultMQProducer.setDefaultTopicQueueNums(4);
         try {
             defaultMQProducer.start();
         } catch (MQClientException e) {
