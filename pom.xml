@@ -12,7 +12,6 @@
         <module>standard-protocol</module>
         <module>springboot-redis</module>
         <module>data-transfer-service</module>
-        <module>rabbitmq-cli</module>
         <module>rocketmq-cli</module>
         <module>Sharding-DB</module>
     </modules>
