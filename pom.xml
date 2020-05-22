@@ -14,14 +14,8 @@
         <module>data-transfer-service</module>
         <module>rocketmq-cli</module>
         <module>Sharding-DB</module>
+        <module>back-service</module>
     </modules>
-
-    <!--起步工具包依赖项，提供了很多默认的配置，控制了所有依赖的版本号-->
-    <!--<parent>-->
-        <!--<groupId>org.springframework.boot</groupId>-->
-        <!--<artifactId>spring-boot-starter-parent</artifactId>-->
-        <!--<version>2.2.2.RELEASE</version>-->
-    <!--</parent>-->
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/junit/junit -->

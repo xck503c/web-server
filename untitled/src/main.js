@@ -3,8 +3,20 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import ElementUI from 'element-ui'
+import EasyUI from 'vx-easyui'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+import 'element-ui/lib/theme-chalk/index.css'
+import 'vx-easyui/dist/themes/default/easyui.css'
+import 'vx-easyui/dist/themes/icon.css'
+import 'vx-easyui/dist/themes/vue.css'
 
 Vue.config.productionTip = false
+Vue.use(ElementUI)
+Vue.use(EasyUI)
+Vue.use(VueAxios, axios)
+Vue.prototype.$axios = axios;
 
 /* eslint-disable no-new */
 new Vue({
