@@ -1,35 +1,45 @@
 package com.xck.controller;
 
-import org.junit.Before;
+import com.alibaba.fastjson.JSONObject;
+import com.xck.model.ReqLogin;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import static org.junit.jupiter.api.Assertions.*;
-@RunWith(SpringRunner.class)
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest
-@WebAppConfiguration
+@AutoConfigureMockMvc
 class LoginControllerTest {
-    private MockMvc mvc;
-
-    @Before
-    public void setupMockMvc(){
-        mvc = MockMvcBuilders.standaloneSetup(new LoginController()).build(); //初始化MockMvc对象
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     void login() throws Exception{
-        String responseString = mvc.perform(MockMvcRequestBuilders.post("/login")).andReturn().getResponse().getContentAsString();
-        System.out.println("result : "+responseString);
+        ReqLogin reqLogin = new ReqLogin();
+        reqLogin.setUserName("xck123");
+        reqLogin.setPwd("123456");
+        this.mockMvc.perform(get("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8")
+                .content(JSONObject.toJSONString(reqLogin)))
+                .andDo(print()).andExpect(status().isOk());
+    }
+
+    @Test
+    public void testIOSToUTF8() throws Exception{
+        System.out.println(new String("请求成功".getBytes(), "GB2312"));
+        System.out.println(new String(new String("请求成功".getBytes(), "ISO8859_1").getBytes(), "UTF-8"));
+        System.out.println(new String("请求成功".getBytes("GB2312")));
+        System.out.println(new String("请求成功".getBytes("GB2312"), "GB2312"));
+        System.out.println(new String("请求成功".getBytes("GB2312"), "ISO8859_1"));
+        System.out.println(new String("请求成功".getBytes("ISO8859_1")));
+        System.out.println(new String("请求成功".getBytes("ISO8859_1"), "GB2312"));
+        System.out.println(new String("请求成功".getBytes("ISO8859_1"), "ISO8859_1"));
     }
 }

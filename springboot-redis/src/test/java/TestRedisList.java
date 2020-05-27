@@ -24,8 +24,8 @@ public class TestRedisList {
         RedisPool pool = new RedisPool();
 
         List<String> list = new ArrayList<String>();
-        for(int i=0; i<4000; i++){
-            list.add(JSONObject.toJSONString(new TestClass("徐成昆", i)));
+        for(int i=0; i<300; i++){
+            list.add(i+"");
         }
 
         pool.lpushMultiPipe(listKey, list, 500);
