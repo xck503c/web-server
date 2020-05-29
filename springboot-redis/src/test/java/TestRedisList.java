@@ -76,7 +76,13 @@ public class TestRedisList {
     @Test
     public void llen(){
         RedisPool pool = new RedisPool();
-        System.out.println(pool.listLen(listKey));
+//        System.out.println(pool.listLen(listKey));
+
+        List<String> listQueueName = new ArrayList<String>();
+        listQueueName.add("a");
+        listQueueName.add("b");
+        listQueueName.add("c");
+        System.out.println(pool.listLens(listQueueName));
     }
 
     /**

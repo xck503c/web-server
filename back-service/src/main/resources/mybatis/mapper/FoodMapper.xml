@@ -1,0 +1,5 @@
+<mapper namespace="com.xck.dao.FoodMapper">
+    <sql id="base_column_list">
+
+    </sql>
+</mapper>

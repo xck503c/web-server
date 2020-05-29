@@ -1,4 +1,4 @@
-package com.xck.model;
+package com.xck.model.req;
 
 public class ReqResp<T> {
     private int code;

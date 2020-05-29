@@ -262,6 +262,24 @@ public class RedisPool {
         return 0L;
     }
 
+    public List<Object> listLens(List<String> queueNames){
+        Jedis jedis = null;
+        try {
+            jedis = getJedis();
+            Pipeline pipeline = jedis.pipelined();
+            for(String queueName : queueNames){
+                pipeline.llen(queueName.getBytes());
+            }
+            List<Object> lenList = pipeline.syncAndReturnAll();
+            return lenList;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            returnJedis(jedis);
+        }
+        return null;
+    }
+
     public static void main(String[] args) {
         System.out.println(26276+13535+30509+30083+84628+174824
                 +48872+32474+13069+44982+424678+129090+141576+261303+315665+113995

@@ -1,4 +1,4 @@
-package com.xck.model;
+package com.xck.model.req;
 
 public enum  RespCode {
     SUCCESS(0, "请求成功"),

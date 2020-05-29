@@ -1,8 +1,8 @@
 package com.xck.controller;
 
-import com.xck.model.ReqLogin;
-import com.xck.model.RespCode;
-import com.xck.model.ReqResp;
+import com.xck.model.req.ReqLogin;
+import com.xck.model.req.RespCode;
+import com.xck.model.req.ReqResp;
 import com.xck.model.UserInfo;
 import org.springframework.web.bind.annotation.*;
 

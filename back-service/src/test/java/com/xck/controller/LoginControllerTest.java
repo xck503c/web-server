@@ -1,7 +1,7 @@
 package com.xck.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.xck.model.ReqLogin;
+import com.xck.model.req.ReqLogin;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

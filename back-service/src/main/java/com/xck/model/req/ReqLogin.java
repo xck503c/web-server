@@ -1,8 +1,7 @@
-package com.xck.model;
+package com.xck.model.req;
 
-import java.io.Serializable;
 
-public class ReqLogin implements Serializable {
+public class ReqLogin {
     private String userName;
     private String pwd;
 
