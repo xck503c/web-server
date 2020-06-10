@@ -15,6 +15,7 @@
         <module>rocketmq-cli</module>
         <module>Sharding-DB</module>
         <module>back-service</module>
+        <module>java-demo-test</module>
     </modules>
 
     <dependencies>
