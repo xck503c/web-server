@@ -3,12 +3,12 @@ package com.xck.redis;
 import com.xck.form.TestClass;
 import redis.clients.jedis.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RedisPool {
+    private String mode = "single";
     private JedisPool jedisPool = null;
+    private JedisSentinelPool jedisSentinelPool = null;
 
     public void init(){
         if(jedisPool == null){
@@ -19,13 +19,51 @@ public class RedisPool {
             jedisPoolConfig.setTestOnBorrow(true);
             jedisPoolConfig.setMinIdle(60000);
 
-            jedisPool = new JedisPool(jedisPoolConfig, "127.0.0.1", 6379);
+            jedisPool = new JedisPool(jedisPoolConfig, "127.0.0.1", 8881);
         }
     }
 
+    public void initPwd(){
+        if(jedisPool == null){
+            JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+            jedisPoolConfig.setMaxIdle(60000);
+            jedisPoolConfig.setMaxTotal(15);
+            jedisPoolConfig.setMaxWaitMillis(10000);
+            jedisPoolConfig.setTestOnBorrow(true);
+            jedisPoolConfig.setMinIdle(60000);
+
+            jedisPool = new JedisPool(jedisPoolConfig, "127.0.0.1", 8883, 15000, "123456");
+        }
+    }
+
+    public void initPwdSentinel(){
+        if(jedisSentinelPool == null){
+            JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+            jedisPoolConfig.setMaxIdle(60000);
+            jedisPoolConfig.setMaxTotal(15);
+            jedisPoolConfig.setMaxWaitMillis(10000);
+            jedisPoolConfig.setTestOnBorrow(true);
+            jedisPoolConfig.setMinIdle(60000);
+
+            Set<String> ips = new HashSet<String>();
+            ips.add("127.0.0.1:28881");
+            ips.add("127.0.0.1:28882");
+            ips.add("127.0.0.1:28883");
+
+            jedisSentinelPool = new JedisSentinelPool("mymaster", ips, jedisPoolConfig, "123456");
+            mode = "sentinel";
+        }
+    }
+
+
     public Jedis getJedis(){
-        if(jedisPool == null) init();
-        return jedisPool.getResource();
+        if ("single".equals(mode)) {
+            if(jedisPool == null) init();
+            return jedisPool.getResource();
+        }else {
+            if(jedisSentinelPool == null) initPwdSentinel();
+            return jedisSentinelPool.getResource();
+        }
     }
 
     public void returnJedis(Jedis jedis){

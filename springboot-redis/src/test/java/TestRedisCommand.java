@@ -11,18 +11,23 @@ import java.util.Map;
 public class TestRedisCommand {
 
     @Test
-    public void testHmset(){
+    public void testHmset() throws Exception{
         RedisPool pool = new RedisPool();
 
         String hashKey = "test:hmset:user";
 
         Map<String, String> valuesMap = new HashMap<String, String>();
-        for(int i=1; i<500; i++){
-            String name = "xck" + i;
-            valuesMap.put(name, JSONObject.toJSONString(new TestClass("徐成昆", 25)));
+        for (int j=6000; j<7000; j++) {
+            for(int i=1; i<5000; i++){
+                String name = "xck" + i+j;
+                valuesMap.put(name, JSONObject.toJSONString(new TestClass("徐成昆", 25)));
+            }
+            pool.hmset(hashKey, valuesMap);
+            valuesMap.clear();
+            Thread.sleep(5);
         }
 
-        System.out.println(pool.hmset(hashKey, valuesMap));
+//        System.out.println(pool.hmset(hashKey, valuesMap));
     }
 
     @Test
