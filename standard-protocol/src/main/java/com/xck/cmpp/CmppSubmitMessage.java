@@ -1,6 +1,7 @@
 package com.xck.cmpp;
 
 import com.xck.Handler;
+import com.xck.util.StringUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -17,11 +18,22 @@ public class CmppSubmitMessage extends CmppMessage{
     private String feeTerminalId; //被计费用户的号码
     private byte tpPId; //GSM协议类型
     private byte tpUdhi; //
-    private byte msgFmt; //信息格式
-    private String msgSrc; //信息内容来源spId
-    private String feeType;
+    private byte msgFmt; //1B 信息格式
+    private String msgSrc; //6B 信息内容来源spId
+    private String feeType; //2B
+    private String feeCode; //6B
+    private String validTime;
+    private String atTime;
+    private String srcId;
+    private int destUsrTl;
+    private String destTerminalId;
+    private int msgLength;
+    private byte[] msgContent;
+    private String reserve; //保留位置
 
-    public CmppSubmitMessage(Handler handler, CmppHeader cmppHeader, ByteBuf bodyBuf) {
+    private String[] mobiles;
+
+    public CmppSubmitMessage(Handler handler, CmppHeader cmppHeader, ByteBuf bodyBuf) throws Exception{
         super(handler);
         this.cmppHeader = cmppHeader;
         this.msgId = bodyBuf.readLong();
@@ -32,16 +44,53 @@ public class CmppSubmitMessage extends CmppMessage{
         this.serviceId = bodyBuf.readCharSequence(10, Charset.defaultCharset()).toString().trim();
         this.feeUserType = bodyBuf.readByte();
         this.feeTerminalId = bodyBuf.readCharSequence(21, Charset.defaultCharset()).toString().trim();
+        this.tpPId = bodyBuf.readByte();
+        this.tpUdhi = bodyBuf.readByte();
+        this.msgFmt = bodyBuf.readByte();
+        this.msgSrc = bodyBuf.readCharSequence(6, Charset.defaultCharset()).toString().trim();
+        this.feeType = bodyBuf.readCharSequence(2, Charset.defaultCharset()).toString().trim();
+        this.feeCode = bodyBuf.readCharSequence(6, Charset.defaultCharset()).toString().trim();
+        this.validTime = bodyBuf.readCharSequence(17, Charset.defaultCharset()).toString().trim();
+        this.atTime = bodyBuf.readCharSequence(17, Charset.defaultCharset()).toString().trim();
 
+        byte[] b = new byte[21];
+        bodyBuf.readBytes(b);
+        this.srcId = StringUtils.readFromEndFlag(b, 0, 21, 0x00, null);
+
+        this.destUsrTl = bodyBuf.readByte();
+        if(destUsrTl < 0) destUsrTl+=256;
+
+        this.mobiles = new String[1];
+        for(int i=0; i<destUsrTl; i++){
+            b = new byte[21];
+            bodyBuf.readBytes(b);
+            String mobile = StringUtils.readFromEndFlag(b, 0, 21, 0x00, "GBK");
+            if(!"".equals(mobile)){
+                mobiles[0] = mobile;
+            }
+        }
+
+        this.msgLength = bodyBuf.readByte();
+        if(msgLength < 0){
+            msgLength+=256;
+        }
+        this.msgContent = bodyBuf.readBytes(msgLength).array();
+        this.reserve = bodyBuf.readCharSequence(8, Charset.defaultCharset()).toString().trim();
     }
 
     @Override
     public void doSomething(ChannelHandlerContext ctx) throws Exception {
+        System.out.println("收到提交的报文");
+        CmppUserBean cmppUserBean = handler.getCmppUserBean();
 
     }
 
     @Override
     public ByteBuf getMessageBuf() {
         return null;
+    }
+
+    public String getMobile() {
+        return mobiles[0];
     }
 }

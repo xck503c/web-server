@@ -21,13 +21,14 @@ public abstract class CmppMessage {
     public static final int SEND = 0;
     public static final int REC = 1;
 
-    public static CmppMessage createMessage(ByteBuf byteBuf) throws Exception{
+    public static CmppMessage createMessage(ByteBuf byteBuf, Handler handler) throws Exception{
         CmppHeader cmppHeader = new CmppHeader(byteBuf);
         switch (cmppHeader.getCommandId()){
-            case CmppMessage.CONNECT: return new CmppConnectMessage(null, cmppHeader, byteBuf);
-            case CmppMessage.CONNECT_RESP: return new CmppConnectRespMessage(null, cmppHeader, byteBuf);
-            case CmppMessage.TEST: return new CmppActiveTestMessage(null, cmppHeader, byteBuf);
-            case CmppMessage.TEST_RESP: return new CmppActiveTestRespMessage(null, cmppHeader, byteBuf);
+            case CmppMessage.CONNECT: return new CmppConnectMessage(handler, cmppHeader, byteBuf);
+            case CmppMessage.CONNECT_RESP: return new CmppConnectRespMessage(handler, cmppHeader, byteBuf);
+            case CmppMessage.TEST: return new CmppActiveTestMessage(handler, cmppHeader, byteBuf);
+            case CmppMessage.TEST_RESP: return new CmppActiveTestRespMessage(handler, cmppHeader, byteBuf);
+            case CmppMessage.SUBMIT: return new CmppSubmitMessage(handler, cmppHeader, byteBuf);
             default: return null;
         }
     }

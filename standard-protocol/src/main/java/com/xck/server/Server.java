@@ -42,8 +42,8 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new IdleStateHandler(60, 60, 60, TimeUnit.SECONDS));
-                            ch.pipeline().addLast(new ServerFrameDecoder(Integer.MAX_VALUE, 0, 4));
+                            ch.pipeline().addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS));
+//                            ch.pipeline().addLast(new ServerFrameDecoder(Integer.MAX_VALUE, 0, 4));
                             ch.pipeline().addLast(new ServerHandler(ch.localAddress().getPort()));
                             System.out.println("init server handler, port:"
                                     + ch.localAddress().getPort());

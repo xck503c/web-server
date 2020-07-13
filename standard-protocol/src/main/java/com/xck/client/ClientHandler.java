@@ -16,7 +16,7 @@ public class ClientHandler extends Handler{
         System.out.println(ctx.channel() + " client read");
         ByteBuf in = (ByteBuf)msg;
         try {
-            CmppMessage cmppMessage = CmppMessage.createMessage(in);
+            CmppMessage cmppMessage = CmppMessage.createMessage(in, this);
             cmppMessage.doSomething(ctx);
         } catch (Exception e) {
             e.printStackTrace();

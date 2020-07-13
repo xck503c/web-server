@@ -159,6 +159,11 @@ public class CmppUserBean {
         return 0;
     }
 
+    //生成下发响应，回调dosomething方法
+    public void doSendSubmit(CmppSubmitMessage submitMessage){
+
+    }
+
     public static String validLog(int code){
         switch (code){
             case 3: return "注册失败";

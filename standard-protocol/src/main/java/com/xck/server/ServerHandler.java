@@ -3,6 +3,7 @@ package com.xck.server;
 import com.xck.Handler;
 import com.xck.cmpp.CmppActiveTestMessage;
 import com.xck.cmpp.CmppMessage;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 
@@ -19,10 +20,10 @@ public class ServerHandler extends Handler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) { // (2)
         System.out.println(ctx.channel() + " server read");
-
+        ByteBuf in = (ByteBuf)msg;
         try {
-            CmppMessage cmppMessage = (CmppMessage)msg;
-            cmppMessage.setHandler(this);
+            CmppMessage cmppMessage = CmppMessage.createMessage(in, this);
+//            cmppMessage.setHandler(this);
             cmppMessage.doSomething(ctx);
         } catch (Exception e) {
             e.printStackTrace();

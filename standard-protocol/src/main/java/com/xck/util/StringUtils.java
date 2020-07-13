@@ -1,5 +1,7 @@
 package com.xck.util;
 
+import io.netty.buffer.ByteBuf;
+
 import java.security.MessageDigest;
 
 public class StringUtils {
@@ -36,6 +38,25 @@ public class StringUtils {
         } catch (Exception var2) {
             var2.printStackTrace();
             return null;
+        }
+    }
+
+    public static String readFromEndFlag(byte[] body, int start, int maxLen, int endFlag, String charset) throws Exception{
+        byte[] b = new byte[maxLen];
+        int i=start;
+        for(; i<start+maxLen; i++){
+            b[i-start] = body[i];
+            if(b[i-start] == endFlag){
+                i++;
+                break;
+            }
+        }
+        byte[] newByte = new byte[i-start];
+        System.arraycopy(b, 0, newByte, 0, newByte.length);
+        if (charset==null) {
+            return new String(newByte).trim();
+        } else {
+            return new String(newByte, charset).trim();
         }
     }
 }
