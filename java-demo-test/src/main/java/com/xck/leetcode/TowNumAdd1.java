@@ -9,23 +9,63 @@ import java.util.*;
 public class TowNumAdd1 {
 
     public static void main(String[] args) {
-//        int[] a = new int[48];
+//        int[] a = new int[289];
 //
-//        for(int i=47,j=0; i>=0; i--,j++){
+//        for(int i=288,j=0; i>=32; i--,j++){
 //            a[j] = i;
 //        }
-//
+//        for(int i=0; i<=31; i++){
+//            a[i] = 10;
+//        }
+////
 //        Arrays.sort(a);
 //        int[] a = new int[]{-1, 1, 1, 2, 4, 7, 7, 7, 8};
 //        int[] a = new int[]{2,7,11,15};
 //        int[] a = new int[]{3,2,3};
-        int[] a = new int[]{3,3};
+//        int[] a = new int[]{3,3};
 //        int[] a = new int[]{-1, -2, -3, -4, -5};
 
 //        int[] b = twoSum(a, -8);
 //        int[] b = find(a, -8);
-        int[] b = find2(a, 6);
-        System.out.println(b[0] + " " + b[1]);
+//        int[] b = find2(a, 6);
+//        System.out.println(b[0] + " " + b[1]);
+
+        sort(new int[]{1,4,8,13,2,3,9,14,5,4,7,10}, 0, 11);
+    }
+
+    public static void sort(int[] a, int left, int right){
+        int[] run = new int[67 + 1];
+        int count = 0; run[0] = left;
+
+        // Check if the array is nearly sorted
+        for (int k = left; k < right; run[count] = k) {
+            if (a[k] < a[k + 1]) { // ascending
+                while (++k <= right && a[k - 1] <= a[k]);
+            } else if (a[k] > a[k + 1]) { // descending
+                while (++k <= right && a[k - 1] >= a[k]);
+                for (int lo = run[count] - 1, hi = k; ++lo < --hi; ) {
+                    int t = a[lo]; a[lo] = a[hi]; a[hi] = t;
+                }
+            } else { // equal
+                for (int m = 33; ++k <= right && a[k - 1] == a[k]; ) {
+                    if (--m == 0) {
+                        System.out.println("1");
+                        return;
+                    }
+                }
+            }
+
+            /*
+             * The array is not highly structured,
+             * use Quicksort instead of merge sort.
+             */
+            if (++count == 67) {
+                System.out.println("2");
+                return;
+            }
+        }
+
+        System.out.println("");
     }
 
 
