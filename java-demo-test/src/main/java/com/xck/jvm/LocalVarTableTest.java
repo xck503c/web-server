@@ -1,11 +1,12 @@
 package com.xck.jvm;
 
 public class LocalVarTableTest {
+    private  static byte[] bytes = null;
 
     public static void main(String[] args) throws Exception{
-        byte[] b = new byte[1000*1024*1024];
-//        System.gc();
-        Thread.sleep(17000);
+//        byte[] b = new byte[393219*1024];
+//        b = null;
+        Thread.sleep(15000);
         localvarGc();
     }
 
@@ -25,13 +26,22 @@ public class LocalVarTableTest {
          */
 //        localVarGC.gc2();
 
-        for(int i=0; i<2; i++){
+        bytes = new byte[(393210-2000)*1024];
+        byte[] b = new byte[(2359296-393210-236005)*1024];
+        b = null;
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for(int i=0; i<3000; i++){
             printGC();
-            byte[] b = new byte[800*1024*1024];
-            b = null;
+            byte[] e1 = new byte[20*1024*1024];
+            byte[] e2 = new byte[2*1024*1024];
+            e1 = null;
             printGC();
             try {
-                Thread.sleep(5000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

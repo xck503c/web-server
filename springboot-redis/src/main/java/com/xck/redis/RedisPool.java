@@ -13,11 +13,11 @@ public class RedisPool {
     public void init(){
         if(jedisPool == null){
             JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-            jedisPoolConfig.setMaxIdle(60000);
+            jedisPoolConfig.setMaxIdle(100);
             jedisPoolConfig.setMaxTotal(15);
             jedisPoolConfig.setMaxWaitMillis(10000);
             jedisPoolConfig.setTestOnBorrow(true);
-            jedisPoolConfig.setMinIdle(60000);
+            jedisPoolConfig.setMinIdle(100);
 
             jedisPool = new JedisPool(jedisPoolConfig, "127.0.0.1", 6379);
         }
