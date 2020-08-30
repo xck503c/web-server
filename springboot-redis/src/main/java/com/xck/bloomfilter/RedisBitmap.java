@@ -44,7 +44,10 @@ public class RedisBitmap implements Bitmap{
                     return true;
                 }
             }
-        } finally {
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
             redisPool.returnJedis(jedis);
         }
         return false;
@@ -57,20 +60,26 @@ public class RedisBitmap implements Bitmap{
             jedis = redisPool.getJedis();
             if (jedis != null) {
                 Pipeline pipeline = jedis.pipelined();
+                List<Response<Boolean>> result = new ArrayList<Response<Boolean>>(offsets.length);
                 for(int i=0; i<offsets.length; i++){
-                    pipeline.getbit(redisKey, offsets[i]);
+                    result.add(pipeline.getbit(redisKey, offsets[i]));
                 }
-                List<Object> result = pipeline.syncAndReturnAll();
+                pipeline.sync();
                 if(result!=null && result.size()>0){
+                    int count = 0;
                     for(int i=0; i<result.size(); i++){
-                        if(!(Boolean)result.get(i)){
-                            return false;
+                        if(result.get(i).get()){
+                            ++count;
                         }
                     }
+                    if(count == result.size()) return false;
                     return true;
                 }
             }
-        } finally {
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
             redisPool.returnJedis(jedis);
         }
         return false;
@@ -100,6 +109,19 @@ public class RedisBitmap implements Bitmap{
             redisPool.returnJedis(jedis);
         }
         return false;
+    }
+
+    public long bitCount(){
+        Jedis jedis = null;
+        try {
+            jedis = redisPool.getJedis();
+            if (jedis != null) {
+                return jedis.bitcount(redisKey);
+            }
+        } finally {
+            redisPool.returnJedis(jedis);
+        }
+        return -1;
     }
 
     public String getRedisKey() {

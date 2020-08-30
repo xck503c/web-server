@@ -1,6 +1,7 @@
 package com.xck.bloomfilter;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RedisBloomFilter {
@@ -15,6 +16,8 @@ public class RedisBloomFilter {
 
     //哈希函数的数量
     private int hashFuncCount;
+
+    public List<String> list = new ArrayList<String>(10000);
 
     public RedisBloomFilter(Bitmap _bitmap, long dataSize, float errRate){
         if(_bitmap == null) throw new IllegalArgumentException("RedisBloomFilter's redis map obj no init");
@@ -36,7 +39,11 @@ public class RedisBloomFilter {
         long[] offsets = new long[datas.size() * hashFuncCount];
         int cursor = 0;
         for(String data : datas){
-            long[] tmp = HashUtils.murmurHashOffset(data, hashFuncCount, bitmap.getMaxbitSize());
+            if(!mightContain(data)){
+                list.add(data);
+                continue;
+            }
+            long[] tmp = HashUtils.bloomFilterHash(data, hashFuncCount, bitmap.getMaxbitSize());
             for(int i=0; i<tmp.length; i++){
                 offsets[cursor++] = tmp[i];
             }
@@ -46,11 +53,11 @@ public class RedisBloomFilter {
     }
 
     public boolean add(String data) throws UnsupportedEncodingException {
-        return bitmap.set(HashUtils.murmurHashOffset(data, hashFuncCount, bitmap.getMaxbitSize()));
+        return bitmap.set(HashUtils.bloomFilterHash(data, hashFuncCount, bitmap.getMaxbitSize()));
     }
 
     public boolean mightContain(String data) throws UnsupportedEncodingException {
-        return bitmap.isExists(HashUtils.murmurHashOffset(data, hashFuncCount, bitmap.getMaxbitSize()));
+        return bitmap.isExists(HashUtils.bloomFilterHash(data, hashFuncCount, bitmap.getMaxbitSize()));
     }
 
     /**
@@ -58,8 +65,8 @@ public class RedisBloomFilter {
      *例如： 50000000,0.00001f --- 142MB
      * @return
      */
-    private int calcBitSize(){
-        return (int)Math.ceil(-1*dataSize*Math.log(errRate)/(Math.log(2)*Math.log(2)));
+    private long calcBitSize(){
+        return (long)Math.ceil(-1*dataSize*Math.log(errRate)/(Math.log(2)*Math.log(2)));
     }
 
     /**
@@ -69,5 +76,6 @@ public class RedisBloomFilter {
     private int calcHashFuncCount(long bitSize){
         return (int) Math.ceil((bitSize / dataSize) * Math.log(2));
     }
+
 
 }
