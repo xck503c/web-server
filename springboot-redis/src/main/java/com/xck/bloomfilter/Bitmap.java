@@ -1,8 +1,10 @@
 package com.xck.bloomfilter;
 
+import java.util.List;
+
 public interface Bitmap {
 
-    boolean set(long[] offsets);
+    boolean set(List<Long> offsets);
 
     boolean set(long offset);
 

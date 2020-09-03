@@ -8,20 +8,18 @@ import redis.clients.jedis.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RedisBitmap implements Bitmap{
+public class RedisCountingBitmap extends RedisBitmap{
 
     public final long MB512 = 512*8*1024*1024L;
 
-    //位图的key
-    protected String redisKey;
-    protected long maxbitSize;
-    protected long keySize;
+    private int counterBitSize;
+    private long maxBit;
 
     private RedisPool redisPool = new RedisPool();
 
-    public RedisBitmap(String redisKey){
-        this.redisKey = redisKey;
-        redisPool.init();
+    public RedisCountingBitmap(String redisKey, int counterBitSize){
+        super(redisKey);
+        this.counterBitSize = counterBitSize;
     }
 
     //批量设置位图中的位
@@ -31,9 +29,14 @@ public class RedisBitmap implements Bitmap{
             jedis = redisPool.getJedis();
             if (jedis != null) {
                 Pipeline pipeline = jedis.pipelined();
+                //先获取所有位
+                List<Response<Boolean>> offsetCounter = new ArrayList<Response<Boolean>>();
+                for(Long offset : offsets){
+                    offsetCounter.add(pipeline.getbit(getRedisKey(offset), offset));
+                }
+
                 List<Response<Boolean>> result = new ArrayList<Response<Boolean>>(offsets.size());
-                for(long offset : offsets){
-                    if (offset < 0 ) continue;
+                for(Long offset : offsets){
                     result.add(pipeline.setbit(getRedisKey(), offset, true));
                 }
                 pipeline.sync();
@@ -62,17 +65,17 @@ public class RedisBitmap implements Bitmap{
             jedis = redisPool.getJedis();
             if (jedis != null) {
                 Pipeline pipeline = jedis.pipelined();
-                List<Response<Boolean>> result = new ArrayList<Response<Boolean>>(offsets.length);
+                List<Response<Boolean>> result = new ArrayList<Response<Boolean>>(counterBitSize*offsets.length);
                 for(int i=0; i<offsets.length; i++){
-                    if (offsets[i] < 0 ) continue;
-                    result.add(pipeline.getbit(getRedisKey(), offsets[i]));
+                    setPipeBitsInCounter(pipeline, offsets[i], result);
                 }
                 pipeline.sync();
                 if(result!=null && result.size()>0){
                     int count = 0;
+
                     for(int i=0; i<result.size(); i++){
                         if(result.get(i).get()){
-                            ++count;
+
                         }
                     }
                     if(count == result.size()) return false;
@@ -127,37 +130,30 @@ public class RedisBitmap implements Bitmap{
         return -1;
     }
 
-    public String getRedisKey() {
-        return redisKey;
-    }
-
-    public void setRedisKey(String redisKey) {
-        this.redisKey = redisKey;
-    }
-
-    public long getMaxbitSize() {
-        return maxbitSize;
-    }
-
-    public void setMaxbitSize(long maxbitSize) {
-        this.maxbitSize = maxbitSize;
-    }
-
-    public String getRedisKey(long offset) {
-        return redisKey+":"+getKeyIndex(offset);
-    }
-
-    public long getKeyIndex(long offset){
-        long index = 0;
-        if(offset >= MB512){
-            index = offset/MB512;
+    //获取计数器中的位
+    public void setPipeBitsInCounter(Pipeline pipeline, long offset, List<Response<Boolean>> result) {
+        if(pipeline == null || offset >= maxbitSize){
+            return;
         }
-        return index;
+
+        //0001 0010 0100 1000
+        //3 - 1000
+        //4*3=12
+        long firstBit = counterBitSize*offset;
+        for(int i=0; i<counterBitSize; i++){
+            long index = getKeyIndex(firstBit+i);
+            result.add(pipeline.getbit(getRedisKey(index), firstBit+i));
+        }
+    }
+
+    public String getRedisKey(long index){
+        return redisKey + ":" + index;
     }
 
     public void setKeySize() {
-        if(getMaxbitSize() > MB512){
-            this.keySize = getMaxbitSize()/MB512+1;
+        maxBit = getMaxbitSize()*counterBitSize;
+        if(maxBit > MB512){
+            this.keySize = maxBit/MB512+1;
             System.out.println("超过MB512的限制，需要扩展，key个数为：" + keySize);
         }else {
             this.keySize = 0;
