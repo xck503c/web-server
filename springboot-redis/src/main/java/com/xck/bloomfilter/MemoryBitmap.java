@@ -1,5 +1,7 @@
 package com.xck.bloomfilter;
 
+import java.util.List;
+
 public class MemoryBitmap implements Bitmap{
 
     //位图的key
@@ -58,5 +60,9 @@ public class MemoryBitmap implements Bitmap{
     public void setMaxbitSize(long maxbitSize) {
         this.maxbitSize = maxbitSize;
         bitMap = new long[(int)(this.maxbitSize/64+1)];
+    }
+
+    public boolean set(List<Long> offsets) {
+        return false;
     }
 }

@@ -15,9 +15,19 @@ public class TestRedisBloomFilter {
 //        System.out.println(hashCode("zzzzzz9999999999999999"));
 //        System.out.println(0|1);
 //        testRedis();
-        testcbf();
+//        testcbf();
+//        testStringCharisOneByte();
+//        testOperInFourBitBatchAddOrDec();
+
+        testRedisBitMaxBitSize();
+
     }
 
+    /**
+     * 主要测试java的hashcode算法，换成long类型
+     * @param s
+     * @return
+     */
     public static long hashCode(String s) {
         char[] value = s.toCharArray();
         long h = 0;
@@ -31,10 +41,14 @@ public class TestRedisBloomFilter {
         return h;
     }
 
+    /**
+     * 主要测试一个redis字符串最大可以表示的位，可以用来储存多少规模的数据
+     * 512MB最多是2.2亿
+     */
     public static void testRedisBitMaxBitSize(){
         RedisBitmap redisBitmap = new RedisBitmap("user_black_mobile");
         RedisBloomFilter redisBloomFilter = new RedisBloomFilter(redisBitmap
-                , 100000000, 0.00001f);
+                , 100000000, 0.000459f);
         //2396264600
         //4294967296
         System.out.println(512 * 8 * 1024 * 1024L);
@@ -119,4 +133,161 @@ public class TestRedisBloomFilter {
         RedisBloomFilter redisBloomFilter = new RedisBloomFilter(redisBitmap
                 , 100000000, 0.0001f);
     }
+
+    /**
+     * 主要测试和证明，getrange和setrange中一个偏移量是1个字节
+     * @throws Exception
+     */
+    public static void testStringCharisOneByte() throws Exception{
+        RedisPool redisPool = new RedisPool();
+        redisPool.init();
+
+        Jedis jedis = redisPool.getJedis();
+
+        //证明：可以用ascii表示的，每个字符1个字节
+        for(int i=0; i<2048; i++){
+            jedis.append("a", ((char)1)+"");
+        }
+//
+//
+        jedis.setbit("a", 33, true);
+
+        int count = 0;
+        for(int i=0; i<128; i++){
+            count++;
+            System.out.print(jedis.getbit("a", i) + "  ");
+            if(count % 8 == 0){
+                System.out.println();
+            }
+        }
+//        System.out.println((int)'1');
+//        System.out.println((int)'9');
+
+        //
+//        for(int i=0; i<256; i++){
+//            jedis.append("a", "9");
+//        }
+
+        //从0开始，第7个四位的位置，4*(7-1)=24个，换算成字节，从0开始第3个
+        //0000 0000 0000 0000 0000 0000 0000 0000
+//        long offset = 7;
+//        long charindex = offset;
+//        if(offset %2 != 0){
+//            charindex = offset-1;
+//        }
+//        charindex = charindex/2;
+
+        int charindex = 4;
+
+        byte[] b = jedis.getrange("a".getBytes(), charindex, charindex);
+        System.out.println(b.length); //1
+
+        for(int i=0; i<b.length; i++){
+            System.out.print(b[i] + "  ");
+        }
+        System.out.println();
+//        jedis.setrange("a", charindex, ""+a);
+
+//        System.out.println(jedis.getrange("a", charindex, charindex));
+    }
+
+    /**
+     * 主要测试，可以通过任意4位一组的索引定位，从而实现+or-
+     */
+    public static void testOperInFourBitBatchAddOrDec(){
+        index("a", 13, true);
+    }
+
+    /**
+     *
+     * @param batchIndex 从0开始
+     * @return
+     */
+    private static void index(String key, long batchIndex, boolean isInc){
+        //0000 0000 0000 0000 0000 0000 0000
+        //奇数就是低位，偶数就是高位
+        boolean isHigh = batchIndex%2==0;
+        long byteIndx = batchIndex/2;
+
+        RedisPool redisPool = new RedisPool();
+        redisPool.init();
+
+        Jedis jedis = redisPool.getJedis();
+
+        byte[] b = jedis.getrange(key.getBytes(), byteIndx, byteIndx);
+        if(b.length>1){
+            System.out.println("取出字节数组大于1");
+            return;
+        }
+        System.out.println("取出大小"+b[0]);
+
+        int count = 0;
+        for(int i=0; i<128; i++){
+            count++;
+            System.out.print(jedis.getbit("a", i) + "  ");
+            if(count % 8 == 0){
+                System.out.println();
+            }
+        }
+
+        byte c = incOrDecInFourBit(b[0], isHigh, isInc);
+
+        jedis.setrange(key.getBytes(), byteIndx, new byte[]{c});
+
+        count = 0;
+        for(int i=0; i<128; i++){
+            count++;
+            System.out.print(jedis.getbit("a", i) + "  ");
+            if(count % 8 == 0){
+                System.out.println();
+            }
+        }
+
+        redisPool.returnJedis(jedis);
+    }
+
+    private static byte incOrDecInFourBit(byte b, boolean isHigh, boolean isInc){
+        byte high = (byte) (b>>>4);
+        byte low = (byte)((b<<4)>>>4);
+        System.out.println(String.format("high=%d, low=%d", high, low));
+
+        if(isHigh){
+            if (isInc) {
+                if(high == 15){
+                    System.out.println("high++溢出");
+                }else {
+                    high++;
+                }
+            }else {
+                if(high == 0){
+                    System.out.println("high--溢出");
+                }else{
+                    high--;
+                }
+            }
+
+        }else {
+            if (isInc) {
+                if(low == 15){
+                    System.out.println("low++溢出");
+                }else {
+                    low++;
+                }
+            }else {
+                if(low == 0){
+                    System.out.println("low--溢出");
+                }else {
+                    low--;
+                }
+            }
+        }
+
+        byte c = (byte) (((high<<4)|0x0f)&(low|0xf0));
+
+        System.out.println(String.format("high=%d, low=%d, c=%d", high, low, c));
+
+        return c;
+
+    }
+
 }
