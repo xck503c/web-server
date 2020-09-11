@@ -1,27 +1,30 @@
 package com.xck.jvm;
 
+import java.util.regex.Pattern;
+
 public class LocalVarTableTest {
     private  static byte[] bytes = null;
 
     public static void main(String[] args) throws Exception{
 //        Thread.sleep(15000);
-        byte[] a1,a2,a3,a4,a5;
-//        Thread.sleep(2000);
+//        byte[] a1,a2,a3,a4;
+//
+//        a1 = new byte[2*1024*1024];
+//        a2 = new byte[2*1024*1024];
+//        a3 = new byte[2*1024*1024];
+//        a4 = new byte[4*1024*1024];
+//        try {
+//            Thread.sleep(3000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
+        String content = "2,3,4,5,6,7,8,9";
 
-        a1 = new byte[250*_1MB];
-        a2 = new byte[250*_1MB];
-        a3 = new byte[250*_1MB];
-        a4 = new byte[250*_1MB];
-        System.out.println("分配1G");
-//        Thread.sleep(1000);
-        a5 = new byte[200*_1MB];
+        String pattern = "(?=.*8)(?=.*9)^.*$";
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        boolean isMatch = Pattern.matches(pattern, content);
+        System.out.println("字符串中是否包含了 'runoob' 子字符串? " + isMatch);
     }
 
 //    public static void localvarGc(){

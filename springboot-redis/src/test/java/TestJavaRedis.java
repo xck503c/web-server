@@ -18,11 +18,14 @@ public class TestJavaRedis {
         Jedis jedis = redisPool.getJedis();
 
         Map<String, NetSwitchedMobileInfo> map = new HashMap<String, NetSwitchedMobileInfo>();
-        NetSwitchedMobileInfo info = new NetSwitchedMobileInfo();
-        info.setMobile("15720604554");
-        info.setDest_td_type(999);
-        map.put("15720604553", info);
+        for(long i=15720604553L; i<15720604553L+5000000; i++){
+            NetSwitchedMobileInfo info = new NetSwitchedMobileInfo();
+            info.setMobile(i+"");
+            info.setDest_td_type(2);
+            map.put(info.getMobile(), info);
+        }
 
+        System.out.println("写入");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos=new ObjectOutputStream(baos);
 //        ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(

@@ -20,6 +20,7 @@ public class RedisPool {
             jedisPoolConfig.setMinIdle(100);
 
             jedisPool = new JedisPool(jedisPoolConfig, "127.0.0.1", 6379);
+//            jedisPool.close();
         }
     }
 

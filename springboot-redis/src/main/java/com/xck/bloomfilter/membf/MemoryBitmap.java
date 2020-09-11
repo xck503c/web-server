@@ -1,8 +1,10 @@
-package com.xck.bloomfilter;
+package com.xck.bloomfilter.membf;
+
+import com.xck.bloomfilter.Bitmap;
 
 import java.util.List;
 
-public class MemoryBitmap implements Bitmap{
+public class MemoryBitmap implements Bitmap {
 
     //位图的key
     private String memKey;
@@ -14,10 +16,10 @@ public class MemoryBitmap implements Bitmap{
     }
 
     //批量设置位图中的位
-    public boolean set(long[] offsets){
-        for(int i=0; i<offsets.length; i++){
-            if(!isExist(offsets[i])){
-                set(offsets[i]);
+    public boolean add(List<Long> offsets){
+        for(int i=0; i<offsets.size(); i++){
+            if(!isExist(offsets.get(i))){
+                add(offsets.get(i));
             }
 
         }
@@ -25,14 +27,14 @@ public class MemoryBitmap implements Bitmap{
     }
 
     //批量获取位图中的位
-    public boolean isExists(long[] offsets){
-        for(int i=0; i<offsets.length; i++){
+    public List<Boolean> isExists(List<Long> offsets){
+        for(int i=0; i<offsets.size(); i++){
 
         }
-        return false;
+        return null;
     }
 
-    public boolean set(long offset) {
+    public boolean add(long offset) {
         long bitBlock = bitMap[(int)(offset/64)];
         int bit = (int)(offset%64);
         bitMap[(int)(offset/64)] = (1<<bit) | bitBlock;
@@ -62,7 +64,9 @@ public class MemoryBitmap implements Bitmap{
         bitMap = new long[(int)(this.maxbitSize/64+1)];
     }
 
-    public boolean set(List<Long> offsets) {
+    public boolean remove(List<Long> offsets) {
         return false;
     }
+
+
 }

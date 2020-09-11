@@ -1,9 +1,11 @@
-import com.xck.bloomfilter.MemoryBitmap;
-import com.xck.bloomfilter.RedisBitmap;
-import com.xck.bloomfilter.RedisBloomFilter;
-import com.xck.bloomfilter.RedisCountingBitmap;
+import com.xck.bloomfilter.bf.RedisBloomBitmap;
+import com.xck.bloomfilter.cbf.RedisCountingBloomBitmap;
+import com.xck.bloomfilter.membf.MemoryBitmap;
+import com.xck.bloomfilter.bf.RedisBloomFilter;
 import com.xck.redis.RedisPool;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +21,8 @@ public class TestRedisBloomFilter {
 //        testStringCharisOneByte();
 //        testOperInFourBitBatchAddOrDec();
 
-        testRedisBitMaxBitSize();
-
+        testOperInFourBitBatchAddOrDec();
+        test1();
     }
 
     /**
@@ -46,19 +48,19 @@ public class TestRedisBloomFilter {
      * 512MB最多是2.2亿
      */
     public static void testRedisBitMaxBitSize(){
-        RedisBitmap redisBitmap = new RedisBitmap("user_black_mobile");
-        RedisBloomFilter redisBloomFilter = new RedisBloomFilter(redisBitmap
+        RedisBloomBitmap redisBloomBitmap = new RedisBloomBitmap("user_black_mobile");
+        RedisBloomFilter redisBloomFilter = new RedisBloomFilter(redisBloomBitmap
                 , 100000000, 0.000459f);
         //2396264600
         //4294967296
         System.out.println(512 * 8 * 1024 * 1024L);
-//        redisBitmap.set(512 * 8 * 1024 * 1024L-1);
+//        redisBloomBitmap.set(512 * 8 * 1024 * 1024L-1);
     }
 
     public static void testRedis() throws Exception{
-        RedisBitmap redisBitmap = new RedisBitmap("user_black_mobile");
+        RedisBloomBitmap redisBloomBitmap = new RedisBloomBitmap("user_black_mobile");
 
-        RedisBloomFilter redisBloomFilter = new RedisBloomFilter(redisBitmap
+        RedisBloomFilter redisBloomFilter = new RedisBloomFilter(redisBloomBitmap
                 , 60000000, 0.0001f);
 
         System.out.println("添加数据量: " + (55555555555L - 10000000000L)/1000);
@@ -116,7 +118,7 @@ public class TestRedisBloomFilter {
                 int a = 0;
             }
             if (!redisBitmap.isExist(index)) {
-                redisBitmap.set(index);
+                redisBitmap.add(index);
             }else {
                 System.out.println(i);
                 count2++;
@@ -129,7 +131,7 @@ public class TestRedisBloomFilter {
     }
 
     public static void testcbf(){
-        RedisCountingBitmap redisBitmap = new RedisCountingBitmap("user_black_mobile", 4);
+        RedisCountingBloomBitmap redisBitmap = new RedisCountingBloomBitmap("user_black_mobile", 4);
         RedisBloomFilter redisBloomFilter = new RedisBloomFilter(redisBitmap
                 , 100000000, 0.0001f);
     }
@@ -195,7 +197,21 @@ public class TestRedisBloomFilter {
      * 主要测试，可以通过任意4位一组的索引定位，从而实现+or-
      */
     public static void testOperInFourBitBatchAddOrDec(){
-        index("a", 13, true);
+//        for (int i=0; i<8; i++) {
+//            index("a", 12, true);
+//        }
+        index("a", 12, true);
+    }
+
+    public static void test1() throws Exception{
+        RedisPool redisPool = new RedisPool();
+        redisPool.init();
+
+        Jedis jedis = redisPool.getJedis();
+        Pipeline pipeline = jedis.pipelined();
+        Response<String> key = pipeline.getrange("a", 6, 6);
+        pipeline.sync();
+        System.out.println(key.get().getBytes("GBK")[0]);
     }
 
     /**
@@ -219,7 +235,8 @@ public class TestRedisBloomFilter {
             System.out.println("取出字节数组大于1");
             return;
         }
-        System.out.println("取出大小"+b[0]);
+        byte bt = b.length==0?0:b[0];
+        System.out.println("取出大小"+bt);
 
         int count = 0;
         for(int i=0; i<128; i++){
@@ -230,7 +247,7 @@ public class TestRedisBloomFilter {
             }
         }
 
-        byte c = incOrDecInFourBit(b[0], isHigh, isInc);
+        byte c = incOrDecInFourBit(bt, isHigh, isInc);
 
         jedis.setrange(key.getBytes(), byteIndx, new byte[]{c});
 

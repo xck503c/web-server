@@ -4,15 +4,15 @@ import java.util.List;
 
 public interface Bitmap {
 
-    boolean set(List<Long> offsets);
-
-    boolean set(long offset);
-
-    boolean isExists(long[] offsets);
+    List<Boolean> isExists(List<Long> offsets);
 
     boolean isExist(long offset);
 
     long getMaxbitSize();
 
     void setMaxbitSize(long maxbitSize);
+
+    boolean add(List<Long> offsets);
+
+    boolean remove(List<Long> offsets);
 }

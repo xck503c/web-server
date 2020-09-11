@@ -3,9 +3,10 @@ package com.xck.bloomfilter;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
-import redis.clients.util.MurmurHash;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 哈希计算采用：
@@ -14,19 +15,32 @@ import java.io.UnsupportedEncodingException;
  */
 public class HashUtils {
 
-    public static long[] bloomFilterHash(String data, int hashFuncCount, long maxbitSize) throws UnsupportedEncodingException{
+    public static List<Long> bloomFilterHash(List<String> datas, int hashFuncCount, long maxbitSize) throws UnsupportedEncodingException{
+        List<Long> offsets = new ArrayList<Long>(hashFuncCount);
+        if(datas==null || datas.isEmpty()) return offsets;
+
+        for(String data : datas){
+            List<Long> offsetPart = bloomFilterHash(data, hashFuncCount, maxbitSize);
+            if(offsetPart!=null && offsetPart.size()>0){
+                offsets.addAll(offsetPart);
+            }
+        }
+        return offsets;
+    }
+
+    public static List<Long> bloomFilterHash(String data, int hashFuncCount, long maxbitSize) throws UnsupportedEncodingException{
         return murmur3128InGuava(data, hashFuncCount, maxbitSize);
     }
 
-    private static long[] murmur3128InGuava(String data, int hashFuncCount, long maxbitSize) {
+    private static List<Long> murmur3128InGuava(String data, int hashFuncCount, long maxbitSize) {
         byte[] bytes = Hashing.murmur3_128().hashString(data, Charsets.UTF_8).asBytes();
         long hash1 = lowerEight(bytes);
         long hash2 = upperEight(bytes);
 
         long combinedHash = hash1;
-        long[] offsets = new long[hashFuncCount];
-        for(int i = 0; i<offsets.length; ++i) {
-            offsets[i] = (combinedHash & Long.MAX_VALUE) % maxbitSize;
+        List<Long> offsets = new ArrayList<Long>(hashFuncCount);
+        for(int i = 0; i<hashFuncCount; ++i) {
+            offsets.add((combinedHash & Long.MAX_VALUE) % maxbitSize);
             combinedHash += hash2;
         }
         return offsets;
@@ -44,15 +58,15 @@ public class HashUtils {
      * get the setbit offset by MurmurHash
      * @return
      */
-    private static long[] murmurHashOffset(String data, int hashFuncCount, long maxbitSize) throws UnsupportedEncodingException {
-        int hash1 = MurmurHash.hash(data.getBytes("UTF-8"), 0);
-        int hash2 = MurmurHash.hash(data.getBytes("UTF-8"), hash1);
-        long combinedHash = hash1;
-        long[] offsets = new long[hashFuncCount];
-        for(int i = 0; i<offsets.length; ++i) {
-            offsets[i] = (combinedHash & Long.MAX_VALUE) % maxbitSize;
-            combinedHash += hash2;
-        }
-        return offsets;
-    }
+//    private static long[] murmurHashOffset(String data, int hashFuncCount, long maxbitSize) throws UnsupportedEncodingException {
+//        int hash1 = MurmurHash.hash(data.getBytes("UTF-8"), 0);
+//        int hash2 = MurmurHash.hash(data.getBytes("UTF-8"), hash1);
+//        long combinedHash = hash1;
+//        long[] offsets = new long[hashFuncCount];
+//        for(int i = 0; i<offsets.length; ++i) {
+//            offsets[i] = (combinedHash & Long.MAX_VALUE) % maxbitSize;
+//            combinedHash += hash2;
+//        }
+//        return offsets;
+//    }
 }
