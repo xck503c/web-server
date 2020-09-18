@@ -69,4 +69,9 @@ public class HashUtils {
 //        }
 //        return offsets;
 //    }
+    public static void main(String[] args) throws Exception{
+        System.out.println(bloomFilterHash("zhangsan:1:215700849893", 14, 41225624));
+        System.out.println(bloomFilterHash("zhangsan:1:215700879745", 14, 41225624));
+        System.out.println(bloomFilterHash("zhangsan:1:215700958342", 14, 41225624));
+    }
 }

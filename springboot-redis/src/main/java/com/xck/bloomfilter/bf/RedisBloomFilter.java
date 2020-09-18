@@ -59,6 +59,10 @@ public class RedisBloomFilter {
      */
     public boolean addBatch(List<String> datas) throws UnsupportedEncodingException {
         List<Boolean> isContains = mightContains(datas);
+        if(isContains.size() != datas.size()){
+            System.out.println("datas : " + datas);
+            System.out.println("iscontainssize : " + isContains.size());
+        }
 
         long start = System.currentTimeMillis();
         List<Long> offsets;
@@ -66,6 +70,7 @@ public class RedisBloomFilter {
             offsets = new ArrayList<Long>();
             for(int i=0; i<datas.size(); i++){
                 if(isContains.get(i)){ //如果存在就不添加
+                    System.out.println("存在: " + datas.get(i));
                     continue;
                 }
                 List<Long> tmp = HashUtils.bloomFilterHash(datas.get(i), hashFuncCount, bitmap.getMaxbitSize());
@@ -112,6 +117,7 @@ public class RedisBloomFilter {
                 if(count == hashFuncCount){
                     isContains.add(falseCount == 0 ? true : false);
                     count = 0;
+                    falseCount = 0;
                 }
             }
         } finally {

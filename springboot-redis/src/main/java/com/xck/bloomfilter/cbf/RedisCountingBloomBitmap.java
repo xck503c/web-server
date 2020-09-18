@@ -8,7 +8,9 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * CBF的redis实现，专门和redis交互，可以提供的存在只有添加，删除和是否存在
@@ -31,7 +33,12 @@ public class RedisCountingBloomBitmap extends RedisBloomBitmap {
     public boolean add(List<Long> offsets){
         List<RedisStrByteOperInfo> operInfos = new ArrayList<RedisStrByteOperInfo>();
         for(Long l : offsets){
-            operInfos.add(new RedisStrByteOperInfo(getRedisKey(l), l, true));
+            RedisStrByteOperInfo info = new RedisStrByteOperInfo(getRedisKey(l), l, true);
+            //0000 0000 0000 0000 0000 0000 0000
+            //奇数就是低位，偶数就是高位
+            info.setHigh(info.getBatchIndex()%2==0);
+            info.setByteIndex(info.getBatchIndex()/2);
+            operInfos.add(info);
         }
 
         index(operInfos);
@@ -57,24 +64,26 @@ public class RedisCountingBloomBitmap extends RedisBloomBitmap {
         try {
             jedis = redisPool.getJedis();
             if (jedis != null) {
-                RedisPipeline pipeline = (RedisPipeline)RedisPipeline.pipelined(jedis);
-                List<Response<String>> result = new ArrayList<Response<String>>(offsets.size());
+                Pipeline pipeline = jedis.pipelined();
+                List<Response<byte[]>> result = new ArrayList<Response<byte[]>>(offsets.size());
                 List<RedisStrByteOperInfo> infoList = new ArrayList<RedisStrByteOperInfo>();
                 for(int i=0; i<offsets.size(); i++){
                     RedisStrByteOperInfo info = new RedisStrByteOperInfo();
                     infoList.add(info);
                     info.setByteIndex(offsets.get(i)/2);
                     info.setHigh(offsets.get(i)%2==0);
-                    result.add(pipeline.getrange(getRedisKey(offsets.get(i)), info.getByteIndex(), info.getByteIndex()));
+                    info.setBatchIndex(offsets.get(i));
+                    result.add(pipeline.getrange(getRedisKey(offsets.get(i)).getBytes(), info.getByteIndex(), info.getByteIndex()));
                 }
                 pipeline.sync();
                 if(result!=null && result.size()>0){
 
                     for(int i=0; i<result.size(); i++){
-                        byte[] tmp = result.get(i).get().getBytes();
+                        byte[] tmp = result.get(i).get();
                         if(tmp.length == 0){ //不存在
                             isContains.add(false);
                         }else if(tmp.length == 1){
+//                            System.out.println(i + " " + tmp[0] + " " + infoList.get(i).isHigh + " " + infoList.get(i).getBatchIndex() + " " + infoList.get(i).getByteIndex());
                             if(infoList.get(i).isHigh && (((int)tmp[0]) & 0xf0) > 0){
                                 isContains.add(true);
                             }else if((((int)tmp[0]) & 0x0f) > 0){
@@ -83,7 +92,7 @@ public class RedisCountingBloomBitmap extends RedisBloomBitmap {
                                 isContains.add(false);
                             }
                         }else {
-                            System.out.println("xxxxxx");
+                            System.out.println("xxxxxx" + tmp.length);
                         }
                     }
                 }
@@ -126,44 +135,52 @@ public class RedisCountingBloomBitmap extends RedisBloomBitmap {
      */
     private void index(List<RedisStrByteOperInfo> list){
         Jedis jedis = redisPool.getJedis();
-        RedisPipeline pipeline = (RedisPipeline)RedisPipeline.pipelined(jedis);
+        Pipeline pipeline = jedis.pipelined();
         List<Response<byte[]>> responses = new ArrayList<Response<byte[]>>();
         for(RedisStrByteOperInfo info : list){
-            //0000 0000 0000 0000 0000 0000 0000
-            //奇数就是低位，偶数就是高位
-            info.setHigh(info.getBatchIndex()%2==0);
-            info.setByteIndex(info.getBatchIndex()/2);
-            responses.add(pipeline.getrangeInByte(info.getRedisKey().getBytes(), info.getByteIndex(), info.getByteIndex()));
+            responses.add(pipeline.getrange(info.getRedisKey().getBytes(), info.getByteIndex(), info.getByteIndex()));
         }
 
         pipeline.sync();
 
-        List<byte[]> resultList = new ArrayList<byte[]>();
-        for(Response<byte[]> o : responses){
-            if(o.get().length>1){
+        //因为这里可能出现获取同个字节索引的情况，所以要将相同的进行合并
+        //byteindex --- bytevalue map
+        Map<Long, Byte> byteIndexMapToByteValue = new HashMap<Long, Byte>();
+        Map<Long, RedisStrByteOperInfo> byteIndexMapToOperInfo = new HashMap<Long, RedisStrByteOperInfo>();
+        for(int i=0; i<responses.size(); i++){
+            byte[] byteArr = responses.get(i).get();
+            RedisStrByteOperInfo info = list.get(i);
+
+            if(byteArr.length>1){
                 System.out.println("取出字节数组大于1");
             }else{
-                resultList.add(o.get());
+                if (!byteIndexMapToByteValue.containsKey(info.getByteIndex())) {
+                    byteIndexMapToByteValue.put(list.get(i).getByteIndex(), byteArr.length == 1 ? byteArr[0] : 0);
+                    byteIndexMapToOperInfo.put(list.get(i).getByteIndex(), info);
+                }
             }
         }
         redisPool.returnJedis(jedis);
 
-        incOrDecInFourBitBatch(list, resultList);
+        incOrDecInFourBitBatch(list, byteIndexMapToByteValue, byteIndexMapToOperInfo);
     }
 
     //批量操作
-    private void incOrDecInFourBitBatch(List<RedisStrByteOperInfo> list, List<byte[]> result){
-        Jedis jedis = redisPool.getJedis();
-        Pipeline pipeline = jedis.pipelined();
+    private void incOrDecInFourBitBatch(List<RedisStrByteOperInfo> list, Map<Long, Byte> result, Map<Long, RedisStrByteOperInfo> byteIndexMapToOperInfo){
         for(int i=0; i<list.size(); i++){
             RedisStrByteOperInfo info = list.get(i);
-            byte b = 0;
-            if(result.get(i).length == 1){
-                b = result.get(i)[0];
-            }
-            byte resultB = incOrDecInFourBit(b, info.isHigh(), info.isInc());
-            pipeline.setrange(info.getRedisKey().getBytes(), info.getByteIndex(), new byte[]{resultB});
+            byte byteValue = result.get(info.getByteIndex());
+
+            byte resultB = incOrDecInFourBit(byteValue, info.isHigh(), info.isInc());
+            result.put(info.getByteIndex(), resultB);
         }
+
+        Jedis jedis = redisPool.getJedis();
+        Pipeline pipeline = jedis.pipelined();
+        for(Long key : result.keySet()){
+            pipeline.setrange(byteIndexMapToOperInfo.get(key).getRedisKey().getBytes(), key, new byte[]{result.get(key)});
+        }
+
         pipeline.sync();
         redisPool.returnJedis(jedis);
     }
