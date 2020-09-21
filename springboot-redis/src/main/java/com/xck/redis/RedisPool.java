@@ -319,6 +319,26 @@ public class RedisPool {
         return null;
     }
 
+    //取出来会有null的情况，即便用了llen判断也是一样
+    public boolean sadd(String key, List<String> list){
+        Jedis jedis = null;
+        boolean result = false;
+        try {
+            jedis = getJedis();
+            Pipeline pipeline = jedis.pipelined();
+            for(int i=0; i<list.size(); i++){
+                pipeline.sadd(key.getBytes(), list.get(i).getBytes());
+            }
+            pipeline.sync();
+            result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            returnJedis(jedis);
+        }
+        return result;
+    }
+
     public static void main(String[] args) {
         System.out.println(26276+13535+30509+30083+84628+174824
                 +48872+32474+13069+44982+424678+129090+141576+261303+315665+113995

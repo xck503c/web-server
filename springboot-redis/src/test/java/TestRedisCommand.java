@@ -106,4 +106,76 @@ public class TestRedisCommand {
         System.out.println(map);
         System.out.println(result.size());
     }
+
+    @Test
+    public void testsadd(){
+        String key = "a";
+
+        RedisPool pool = new RedisPool();
+        pool.init();
+
+        int count = 0;
+        long logcount = 0;
+        int batchprint = 0;
+        List<String> list = new ArrayList<String>(500);
+        for(long i=15700000000L; i<15700000000L+10000000; i++){
+            ++count;
+            ++logcount;
+            list.add(i+"");
+            if(count % 1000 == 0){
+                while (!pool.sadd(key, list)) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                list.clear();
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(logcount % 500000 == 0){
+                System.out.println("数据量: " + logcount + ", 次数:" + (++batchprint));
+            }
+        }
+    }
+
+    @Test
+    public void testsmember(){
+        String key = "a";
+
+        RedisPool pool = new RedisPool();
+        pool.init();
+
+        int count = 0;
+        long logcount = 0;
+        int batchprint = 0;
+        List<String> list = new ArrayList<String>(500);
+        for(long i=15700000000L; i<15700000000L+10000000; i++){
+            ++count;
+            ++logcount;
+            list.add(i+"");
+            if(count % 1000 == 0){
+                while (!pool.sadd(key, list)) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                list.clear();
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(logcount % 500000 == 0){
+                System.out.println("数据量: " + logcount + ", 次数:" + (++batchprint));
+            }
+        }
+    }
 }
