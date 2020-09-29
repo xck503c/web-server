@@ -118,11 +118,11 @@ public class TestRedisCommand {
         long logcount = 0;
         int batchprint = 0;
         List<String> list = new ArrayList<String>(500);
-        for(long i=15700000000L; i<15700000000L+10000000; i++){
+        for(long i=5700000000L; i<5700000000L+10; i++){
             ++count;
             ++logcount;
-            list.add(i+"");
-            if(count % 1000 == 0){
+            list.add(i+"99");
+            if(count % 10 == 0){
                 while (!pool.sadd(key, list)) {
                     try {
                         Thread.sleep(1000);
@@ -154,10 +154,10 @@ public class TestRedisCommand {
         long logcount = 0;
         int batchprint = 0;
         List<String> list = new ArrayList<String>(500);
-        for(long i=15700000000L; i<15700000000L+10000000; i++){
+        for(long i=5700000000L; i<5700000000L+2000000; i++){
             ++count;
             ++logcount;
-            list.add(i+"");
+            list.add(i+"999");
             if(count % 1000 == 0){
                 while (!pool.sadd(key, list)) {
                     try {

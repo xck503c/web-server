@@ -10,15 +10,15 @@ import java.util.List;
 public class TestRedisCountingBloomFilter {
 
     public static void main(String[] args) throws Exception{
-//        test();
+        test();
 //        initData();
-        find();
+//        find();
     }
 
     public static void test() throws Exception{
         String redisKey = "test";
         RedisCountingBloomBitmap rcbb = new RedisCountingBloomBitmap(redisKey, 4);
-        RedisCountingBloomFilter rcbf = new RedisCountingBloomFilter(rcbb, 2000000, 0.00005f);
+        RedisCountingBloomFilter rcbf = new RedisCountingBloomFilter(rcbb, 10, 0.1f);
 
         /**
          * 存在: zhangsan:1:215700849893
@@ -26,10 +26,10 @@ public class TestRedisCountingBloomFilter {
          * 存在: zhangsan:1:215700958342
          */
         //初始化账户级
-        System.out.println("初始化基础账户级------------------");
-        List<String> str = new ArrayList<String>();
-        str.add("zhangsan:1:215700849893");
-        rcbf.addBatch(str);
+//        System.out.println("初始化基础账户级------------------");
+//        List<String> str = new ArrayList<String>();
+//        str.add("zhangsan:1:215700849893");
+//        rcbf.addBatch(str);
 //        System.out.println(rcbf.mightContain("zhangsan:1:216700000000"));;
 
 //        RedisPool redisPool = new RedisPool();

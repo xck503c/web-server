@@ -327,7 +327,7 @@ public class RedisPool {
             jedis = getJedis();
             Pipeline pipeline = jedis.pipelined();
             for(int i=0; i<list.size(); i++){
-                pipeline.sadd(key.getBytes(), list.get(i).getBytes());
+                pipeline.sadd(key.getBytes(), stringToLongByte(list.get(i)));
             }
             pipeline.sync();
             result = true;
@@ -339,10 +339,26 @@ public class RedisPool {
         return result;
     }
 
+    /**
+     * 根据情况将存储空间压缩
+     * @param longStr
+     * @return
+     */
+    public byte[] stringToLongByte(String longStr){
+        long lv = Long.parseLong(longStr);
+
+        byte[] b = new byte[5];
+        for(int i=0; i<b.length; i++){
+            b[i] = (byte)((lv & (0xff << i*8)) >>> (i*8));
+        }
+        return b;
+//        return longStr.getBytes();
+    }
+
+    //
+//    public byte[]
+
     public static void main(String[] args) {
-        System.out.println(26276+13535+30509+30083+84628+174824
-                +48872+32474+13069+44982+424678+129090+141576+261303+315665+113995
-                +74988+321375+93941+40365+57183+6594+8187+162675+195823+102170
-                +29411+78405+83915+254084);
+
     }
 }
