@@ -51,7 +51,7 @@ public class ArrayBlockQueueTest {
                 while (!Thread.currentThread().isInterrupted()){
                     Object o = queue1.take();
                     if(o!=null) count++;
-                    System.out.println(Thread.currentThread().getName() + " take " + o);
+//                    System.out.println(Thread.currentThread().getName() + " take " + o);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -71,7 +71,7 @@ public class ArrayBlockQueueTest {
                 countDownLatch.await();
                 while (count < 500000){
                     queue1.put(count);
-                    System.out.println(Thread.currentThread().getName() + " put " + count + " " + queue1.size());
+//                    System.out.println(Thread.currentThread().getName() + " put " + count + " " + queue1.size());
                     count++;
                 }
             } catch (InterruptedException e) {
