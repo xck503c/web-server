@@ -4,5 +4,6 @@ public enum EventType {
 
     submitRepeatFilter,
     none,
-    other;
+    one,
+    two;
 }
