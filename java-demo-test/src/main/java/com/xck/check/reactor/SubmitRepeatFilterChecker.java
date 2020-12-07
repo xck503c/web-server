@@ -10,9 +10,9 @@ public class SubmitRepeatFilterChecker extends PoolCheckHandler {
         if(list.isEmpty()) return false;
 
 
-        for(CheckEvent event : list){
+        for(final CheckEvent event : list){
             Thread.sleep(6); //<=6ms 都可以消费过来
-            CheckHandler checkHandler = CheckDispatcher.checkHandlerMap.get(event.nextEvent());
+            final CheckHandler checkHandler = CheckDispatcher.checkHandlerMap.get(event.nextEvent());
             if(checkHandler == null){
                 continue;
             }

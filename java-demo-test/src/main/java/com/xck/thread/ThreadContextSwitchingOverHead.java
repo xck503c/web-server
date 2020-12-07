@@ -18,25 +18,25 @@ public class ThreadContextSwitchingOverHead {
         final Thread thread = new Thread(new Runnable() {
             public void run() {
                 while (true) {
-//                    LockSupport.park();
+                    LockSupport.park();
                     count.incrementAndGet();
-//                    Thread.interrupted();//clear interrupt flag
+                    Thread.interrupted();//clear interrupt flag
                 }
             }
         });
         thread.start();
 
-//        for(int i =0;i<1;i++) {
-//            new Thread(new Runnable() {
-//                public void run() {
-//                    while (true) {
-//                        if (!thread.isInterrupted()) {
-//                            thread.interrupt();
-//                        }
-//                    }
-//                }
-//            }).start();
-//        }
+        for(int i =0;i<1;i++) {
+            new Thread(new Runnable() {
+                public void run() {
+                    while (true) {
+                        if (!thread.isInterrupted()) {
+                            thread.interrupt();
+                        }
+                    }
+                }
+            }).start();
+        }
         new Thread(new Runnable() {
             public void run() {
                 int i = 0;

@@ -124,22 +124,22 @@ public class DLArrayBlockingQueue{
     public static void main(String[] args) throws InterruptedException{
         long t = 0L;
         for(int i=0; i<200; i++){
-            t+=test(i);
+            t+=test(2);
         }
-        System.out.println(t);
+        System.out.println(t/200);
     }
 
-    public static long test(int times) throws InterruptedException{
-        countDownLatch = new CountDownLatch(4);
-        isFinish = new CountDownLatch(2);
-        isTakeFinish = new CountDownLatch(2);
-        Thread[] takTArr = new Thread[2];
-        for(int i=0; i<2; i++){
+    public static long test(int threadSize) throws InterruptedException{
+        countDownLatch = new CountDownLatch(threadSize*2);
+        isFinish = new CountDownLatch(threadSize);
+        isTakeFinish = new CountDownLatch(threadSize);
+        Thread[] takTArr = new Thread[threadSize];
+        for(int i=0; i<threadSize; i++){
             takTArr[i] = new Thread(new TakeTask());
             takTArr[i].start();
         }
 
-        for(int i=0; i<2; i++){
+        for(int i=0; i<threadSize; i++){
             Thread t1 = new Thread(new PutTask());
             t1.start();
         }
@@ -159,7 +159,7 @@ public class DLArrayBlockingQueue{
         }
         isTakeFinish.await();
 
-        System.out.println(times + " " + (System.currentTimeMillis()-start));
+//        System.out.println(times + " " + (System.currentTimeMillis()-start));
 
         return time;
     }

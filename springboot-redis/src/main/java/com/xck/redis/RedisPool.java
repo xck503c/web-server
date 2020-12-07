@@ -16,7 +16,7 @@ public class RedisPool {
             jedisPoolConfig.setMaxIdle(100);
             jedisPoolConfig.setMaxTotal(15);
             jedisPoolConfig.setMaxWaitMillis(10000);
-            jedisPoolConfig.setTestOnBorrow(true);
+            jedisPoolConfig.setTestOnBorrow(false);
             jedisPoolConfig.setMinIdle(100);
 
             jedisPool = new JedisPool(jedisPoolConfig, "127.0.0.1", 6379);
@@ -330,6 +330,21 @@ public class RedisPool {
                 pipeline.sadd(key.getBytes(), stringToLongByte(list.get(i)));
             }
             pipeline.sync();
+            result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            returnJedis(jedis);
+        }
+        return result;
+    }
+
+    public boolean sismember(String key, String member){
+        Jedis jedis = null;
+        boolean result = false;
+        try {
+            jedis = getJedis();
+            jedis.sismember(key, member);
             result = true;
         } catch (Exception e) {
             e.printStackTrace();

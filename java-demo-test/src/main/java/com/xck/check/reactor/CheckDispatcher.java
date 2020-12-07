@@ -28,7 +28,7 @@ public class CheckDispatcher extends Thread{
             , TimeUnit.SECONDS, workQueue, new TaskPutBlockPolicy(workQueue));
 
     static {
-        SubmitRepeatFilterChecker submitRepeatFilterChecker = new SubmitRepeatFilterChecker();
+        final SubmitRepeatFilterChecker submitRepeatFilterChecker = new SubmitRepeatFilterChecker();
         submitRepeatFilterChecker.start();
 
         checkHandlerMap.put(EventType.none, new NoneChecker());
@@ -64,8 +64,8 @@ public class CheckDispatcher extends Thread{
                     continue;
                 }
 
-                for(CheckEvent event : list){
-                    CheckHandler checkHandler = checkHandlerMap.get(event.nextEvent());
+                for(final CheckEvent event : list){
+                    final CheckHandler checkHandler = checkHandlerMap.get(event.nextEvent());
                     if(checkHandler == null){
                         continue;
                     }
