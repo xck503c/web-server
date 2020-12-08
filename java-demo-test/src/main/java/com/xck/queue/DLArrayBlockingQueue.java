@@ -9,6 +9,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * 2020-11-19 截止，照搬LinkedBlockingQueue中的双锁方式，实现后性能和LinkedBlockingQueue差不多
  * 但是耗时比ArrayBlockingQueue久
  * 测试场景：2生产，2消费，每个生产50w整型数据，队列长度为1000
+ *
+ * 2020-12-08 换了环境重新测试
+ * 测试场景：20生产，20消费，每个生产50w数据，队列长度1000
+ * 机器参数：可用核心数40，内存管够，启动不指定参数
+ * 测试结果：2253ms，cpu略高350%左右，ygc比数组单锁实现要频繁，比链表实现要好
  */
 public class DLArrayBlockingQueue{
 
@@ -26,9 +31,6 @@ public class DLArrayBlockingQueue{
     private final ReentrantLock putlock = new ReentrantLock();
     private final Condition notFull = putlock.newCondition();
 
-    public volatile int putPark;
-    public volatile int takePark;
-
     public DLArrayBlockingQueue(int size){
         this.capacity = size;
         this.items = new Object[capacity];
@@ -39,9 +41,7 @@ public class DLArrayBlockingQueue{
         putlock.lockInterruptibly();
         try {
             while (isFull()) {
-                ++putPark;
                 notFull.await();
-                --putPark;
             }
             items[putIndex] = e;
             putIndex = (++putIndex == items.length) ? 0 : putIndex;
@@ -68,9 +68,7 @@ public class DLArrayBlockingQueue{
         takelock.lockInterruptibly();
         try {
             while (isEmpty()){
-                ++takePark;
                 notEmpty.await();
-                --takePark;
             }
             o = items[takeIndex];
             items[takeIndex] = null;
@@ -96,23 +94,13 @@ public class DLArrayBlockingQueue{
 
     public boolean isEmpty(){
         return count.get() == 0;
-//        return putIndex == takeIndex;
     }
 
     public boolean isFull(){
-//        int putIndexCopy = putIndex;
-//        int put = (putIndexCopy+1 == items.length) ? 0 : putIndexCopy+1;
-//        return put == takeIndex;
         return count.get() == capacity;
     }
 
     public int getCount(){
-//        int put = putIndex;
-//        int take = takeIndex;
-//        if(put >= take){
-//            return put-take;
-//        }
-//        return items.length - takeIndex + putIndex+1;
         return count.get();
     }
 
@@ -159,8 +147,6 @@ public class DLArrayBlockingQueue{
         }
         isTakeFinish.await();
 
-//        System.out.println(times + " " + (System.currentTimeMillis()-start));
-
         return time;
     }
 
@@ -168,13 +154,11 @@ public class DLArrayBlockingQueue{
 
         @Override
         public void run() {
-            int count = 0;
             countDownLatch.countDown();
             try {
                 countDownLatch.await();
                 while (!Thread.currentThread().isInterrupted()){
                     Object o = queue.take();
-                    if(o!=null) count++;
                 }
             } catch (InterruptedException e) {
             }

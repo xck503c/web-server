@@ -5,6 +5,30 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * 2020-12-08 测试数组和链表实现的数据
+ * 机器：windows，4核，4G
+ * 场景：2条生产，2条消费，每条生产50w数据，测试200次，都是有界1000
+ * ArrayBlockingQueue 77ms
+ * LinkedBlockingQueue 170ms
+ * 场景：1条生产，1条消费，每条生产50w数据，测试200次，都是有界1000
+ * ArrayBlockingQueue 60ms
+ * LinkedBlockingQueue 68ms
+ * 场景：1条生产，1条消费，每条生产50w数据，测试200次，链表实现无界
+ * ArrayBlockingQueue 55ms
+ * LinkedBlockingQueue 45ms
+ *
+ * 机器：linux，40核，60G
+ * 场景：10条生产，10条消费，每条生产50w数据，测试200次，都是有界1000，堆参数无指定
+ * ArrayBlockingQueue 2080ms
+ * LinkedBlockingQueue 1386ms
+ * 场景：20条生产，20条消费，每条生产50w数据，测试200次，都是有界1000，堆参数无指定
+ * ArrayBlockingQueue 5656ms，9s一次垃圾回收，cpu300%左右
+ * LinkedBlockingQueue 2680ms，2s一次垃圾回收，基本上每秒一次，到后面变成每秒2次
+ *
+ * 性能链表要好
+ *
+ */
 public class ArrayAndLinkBlockingQueuePerformanceTest {
 
     public static CountDownLatch countDownLatch = new CountDownLatch(2);
@@ -17,15 +41,15 @@ public class ArrayAndLinkBlockingQueuePerformanceTest {
         queue1 = new ArrayBlockingQueue(1000);
         long t = 0L;
         for(int i=0; i<200; i++){
-            t+=test(4);
+            t+=test(1);
         }
         System.out.println(t/200);
 
         System.out.println("test LinkedBlockingQueue...");
-        queue1 = new LinkedBlockingQueue(1000);
+        queue1 = new LinkedBlockingQueue();
         t = 0L;
         for(int i=0; i<200; i++){
-            t+=test(4);
+            t+=test(1);
         }
         System.out.println(t/200);
     }
