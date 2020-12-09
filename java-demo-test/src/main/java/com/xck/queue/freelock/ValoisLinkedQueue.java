@@ -54,8 +54,10 @@ public class ValoisLinkedQueue<T> {
                 break;
             }
             else{
-                //这里会有过多的竞争
-                oldTail.casNext(oldTail, oldTail.next); //帮助移动，失败也无所谓
+                //这里会有过多的竞争 帮助移动，失败也无所谓
+                //这里需要注意的是这块必不可少，因为如果某个线程挂了
+                //，程序还可以继续运行
+                oldTail.casNext(oldTail, oldTail.next);
             }
         }
     }
@@ -65,6 +67,7 @@ public class ValoisLinkedQueue<T> {
         for(;;){
             oldHead = head;
             if(oldHead.next == null) return null; //没有数据
+            //这里会有个问题，那就是如果入队没有及时移动tail指针，会出现tail和head错位的情况
             if(casHead(oldHead, oldHead.next)) { //将头结点往后移动，移动成功则表示拿到数据
                 return oldHead.next.item;
             }
@@ -151,7 +154,7 @@ public class ValoisLinkedQueue<T> {
         Thread putThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i=0; i<10000; i++){
+                for(int i=0; i<100000; i++){
                     queue.enq(i);
                 }
             }
