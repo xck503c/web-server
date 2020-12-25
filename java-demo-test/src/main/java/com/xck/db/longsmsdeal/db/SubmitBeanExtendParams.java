@@ -1,4 +1,4 @@
-package com.xck.longsmsdeal.db;
+package com.xck.db.longsmsdeal.db;
 
 public class SubmitBeanExtendParams {
 

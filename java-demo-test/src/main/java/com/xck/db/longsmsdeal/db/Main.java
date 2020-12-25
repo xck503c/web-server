@@ -1,7 +1,5 @@
-package com.xck.longsmsdeal.db;
+package com.xck.db.longsmsdeal.db;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

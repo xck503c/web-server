@@ -1,4 +1,4 @@
-package com.xck.longsmsdeal;
+package com.xck.db.longsmsdeal;
 
 public class UserBean {
 
