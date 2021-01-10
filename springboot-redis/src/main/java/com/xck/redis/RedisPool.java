@@ -1,6 +1,5 @@
 package com.xck.redis;
 
-import com.xck.form.TestClass;
 import redis.clients.jedis.*;
 
 import java.util.*;
