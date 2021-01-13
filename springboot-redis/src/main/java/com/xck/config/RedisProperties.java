@@ -1,10 +1,11 @@
-package com.xck.redis;
+package com.xck.config;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * @Classname RedisProperties
@@ -15,8 +16,9 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Getter
 @ToString
-@ConfigurationProperties(prefix = "redis")
 @Configuration
+@PropertySource(value = "classpath:db.properties", encoding = "utf-8")
+@ConfigurationProperties(prefix = "redis")
 public class RedisProperties {
 
     private String url;

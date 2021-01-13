@@ -1,13 +1,16 @@
 package com.xck.redis;
 
+import com.xck.config.RedisProperties;
 import org.apache.commons.lang.StringUtils;
 import org.redisson.Redisson;
 import org.redisson.api.*;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.redisson.config.ReadMode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +24,8 @@ import java.util.List;
 @Service
 public class RedissonPool {
     private RedissonClient redissonClient = null;
-    private RedisProperties redisProperties;
 
+    private RedisProperties redisProperties;
 
     public RedissonPool init(RedisProperties redisProperties){
         this.redisProperties = redisProperties;
@@ -31,6 +34,7 @@ public class RedissonPool {
         }else if("sentinel".equals(redisProperties.getMode())){
             if(redissonClient == null) initSentinel();
         }
+        System.out.println("init success!!!");
         return this;
     }
 
