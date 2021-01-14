@@ -1,6 +1,12 @@
 package redisson;
 
+import com.xck.RunMain;
 import com.xck.redis.RedissonPool;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,13 +18,15 @@ import java.util.List;
  * @Date 2021/1/9 20:10
  * @Created by xck503c
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = RunMain.class)
 public class QueueTest {
 
-    public static RedissonPool redissonPool;
+    @Autowired
+    public RedissonPool redissonPool;
 
-    public static void main(String[] args) throws Exception{
-        redissonPool = new RedissonPool();
-        redissonPool.initSingle();
+    @Test
+    public void main() throws Exception{
         redissonPool.setString("name", "xck");
 //        putSms2RedisQueue();
 //        putSms2RedisQueue();
@@ -32,7 +40,7 @@ public class QueueTest {
         redissonPool.close();
     }
 
-    public static void putStringIntRedisQueue(int size) throws Exception{
+    public void putStringIntRedisQueue(int size) throws Exception{
         List<byte[]> list = new ArrayList<>();
         for(int i=90; i<size; i++){
             list.add((i+"").getBytes("utf-8"));
@@ -40,7 +48,7 @@ public class QueueTest {
         redissonPool.enQueue("submitQueue", list);
     }
 
-    public static void putSms2RedisQueue(){
+    public void putSms2RedisQueue(){
         List<Sms> list = new ArrayList<>();
         long baseMobile = 15700000000L;
         for(int i=0; i<1; i++){
@@ -49,7 +57,7 @@ public class QueueTest {
         redissonPool.enQueue("submitQueue", list);
     }
 
-    public static class Sms implements Serializable {
+    public class Sms implements Serializable {
 
         long timeStamp;
         String mobile = "";
