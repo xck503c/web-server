@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties
 public class DBConfig {
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public RedissonPool redissonPool(RedisProperties redisProperties){
         return new RedissonPool().init(redisProperties);
     }

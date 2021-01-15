@@ -4,13 +4,10 @@ import com.xck.config.RedisProperties;
 import org.apache.commons.lang.StringUtils;
 import org.redisson.Redisson;
 import org.redisson.api.*;
-import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.redisson.config.ReadMode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +59,8 @@ public class RedissonPool {
                 if(StringUtils.isNotBlank(redisProperties.getPwd())){
                     config.useSingleServer().setPassword(redisProperties.getPwd());
                 }
-                config.setCodec(JsonJacksonCodec.INSTANCE);
+//                config.setCodec(JsonJacksonCodec.INSTANCE);
+                config.setCodec(JdkObjCodec.INSTANCE);
                 redissonClient = Redisson.create(config);
             }
         } catch (Exception e) {
@@ -94,6 +92,7 @@ public class RedissonPool {
                 if(StringUtils.isNotBlank(redisProperties.getPwd())){
                     config.useSingleServer().setPassword(redisProperties.getPwd());
                 }
+                config.setCodec(JdkObjCodec.INSTANCE);
                 redissonClient = Redisson.create(config);
             }
         } catch (Exception e) {
@@ -132,6 +131,11 @@ public class RedissonPool {
         List<Object> list = new ArrayList<>();
         result.drainTo(list, size);
         return list;
+    }
+
+    public int queueSize(String queueName){
+        RBlockingQueue<Object> result = redissonClient.getBlockingQueue(queueName);
+        return result.size();
     }
 
     public void sadd(String key, byte[] value){

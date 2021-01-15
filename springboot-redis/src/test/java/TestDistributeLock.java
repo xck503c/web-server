@@ -19,7 +19,7 @@ public class TestDistributeLock {
 
         @Override
         public void run() {
-            Redi
+//            Redi
         }
     }
 }
