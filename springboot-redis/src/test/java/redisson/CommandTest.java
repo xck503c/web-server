@@ -21,6 +21,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = RunMain.class)
@@ -123,24 +127,48 @@ public class CommandTest {
      */
     @Test
     public void enOutQueueMulti() throws Exception{
-        String queueName = "msgQ1";
+        System.out.println("111");
+        final String queueName = "msgQ1";
         int getSize = 1000;
 
-        List<Integer> list = new ArrayList<>();
-        for(int i=0; i<10; i++){
-            list.add(i);
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    try {
+                        List<Integer> list = new ArrayList<>();
+                        for(int i=0; i<1; i++){
+                            list.add(i);
+                        }
+                        redissonPool.enQueue(queueName, list);
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        thread.start();
+
+        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(100);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(4, 4, 60, TimeUnit.SECONDS
+                , queue);
+
+        while (true){
+            if(queue.remainingCapacity() > 0){
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Object> result = redissonPool.outQueue(queueName, 1);
+                        if (result.size()>0) {
+                            System.out.println("取出" + result.size());
+                        }
+                    }
+                });
+            }else {
+                Thread.sleep(100);
+            }
         }
-        boolean enResult = redissonPool.enQueue(queueName, list);
-        Assert.assertEquals(enResult, true);
-        Assert.assertEquals(redissonPool.queueSize(queueName), 10);
-
-        list.clear();
-
-        System.out.println(redissonPool.outQueue(queueName, getSize));
-
-        Assert.assertEquals(redissonPool.queueSize(queueName), 0);
-
-        Thread.sleep(10000);
     }
 
     public class Sms implements Serializable {

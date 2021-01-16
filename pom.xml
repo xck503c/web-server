@@ -16,6 +16,7 @@
         <module>Sharding-DB</module>
         <module>back-service</module>
         <module>java-demo-test</module>
+        <module>xxl-job-test</module>
     </modules>
 
     <build>
