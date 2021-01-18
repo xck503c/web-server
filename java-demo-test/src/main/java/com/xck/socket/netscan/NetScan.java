@@ -2,8 +2,10 @@ package com.xck.socket.netscan;
 
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -29,29 +31,68 @@ public class NetScan {
 
     public static void main(String[] args) throws Exception {
 
-        String ip3 = "192.168.1";
-        final Set<String> ips = new HashSet<>();
-        for (int j = 0; j < 255; j++) {
-            final String ip = ip3 + "." + j;
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    CmdResult cmdResult = execCmd("ping " + ip + " -n 4 -w 1000");
-                    System.out.println("scan ip " + ip);
-                    if (cmdResult.isSuc) {
-                        System.out.println(cmdResult.result);
-                        ips.add(ip);
-                    }
-                }
-            });
-        }
-        System.out.println(ips);
+        List<String> segments = localSegment();
+        Set<String> ips = scanIp(segments);
 
         executor.shutdownNow();
+        while (!executor.awaitTermination(1, TimeUnit.SECONDS)) {}
 
-        while (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-            System.out.println("wait pool shutdown");
+        calJumpRouter(ips);
+    }
+
+    private static void calJumpRouter(Set<String> ips){
+        for (String ip : ips){
+            CmdResult result = execCmd("tracert -w 100 " + ip);
+            System.out.println(result);
         }
+    }
+
+    private static Set<String> scanIp(List<String> segments){
+        final Set<String> ips = new HashSet<>();
+        for (String segment : segments) {
+            System.out.println("扫描网段: " + segment);
+            for (int j = 0; j < 255; j++) {
+                final String ip = segment + "." + j;
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        CmdResult cmdResult = execCmd("ping " + ip + " -n 1 -w 500");
+                        if (cmdResult.isSuc) {
+                            System.out.println("scan ip " + ip);
+                            ips.add(ip);
+                        }
+                    }
+                });
+            }
+        }
+        System.out.println(ips);
+        return ips;
+    }
+
+    private static List<String> localSegment() throws Exception{
+        List<String> list = new ArrayList<>();
+        Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
+        while (enumeration.hasMoreElements()) {
+            NetworkInterface networkInterface = enumeration.nextElement();
+            if (networkInterface.isVirtual() || !networkInterface.isUp()
+                    || networkInterface.isLoopback()) {
+                continue;
+            }
+            if (networkInterface.getDisplayName().contains("VirtualBox")
+                    || networkInterface.getDisplayName().contains("VMware"))  {
+                continue;
+            }
+            Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+                InetAddress inetAddress = addresses.nextElement();
+                if(inetAddress instanceof Inet4Address){
+                    String address = inetAddress.getHostAddress();
+                    int index = address.lastIndexOf(".");
+                    list.add(address.substring(0, index));
+                }
+            }
+        }
+        return list;
     }
 
     private static CmdResult execCmd(String cmd){

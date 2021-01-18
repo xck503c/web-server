@@ -61,7 +61,7 @@ public class RedissonPool {
                 }
 //                config.setCodec(JsonJacksonCodec.INSTANCE);
                 config.setCodec(JdkObjCodec.INSTANCE);
-                redissonClient = Redisson.create(config);
+                redissonClient = RedissonExtend.create(config);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +93,7 @@ public class RedissonPool {
                     config.useSingleServer().setPassword(redisProperties.getPwd());
                 }
                 config.setCodec(JdkObjCodec.INSTANCE);
-                redissonClient = Redisson.create(config);
+                redissonClient = RedissonExtend.create(config);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -130,6 +130,33 @@ public class RedissonPool {
         RBlockingQueue<Object> result = redissonClient.getBlockingQueue(key);
         List<Object> list = new ArrayList<>();
         result.drainTo(list, size);
+        return list;
+    }
+
+    /**
+     * 这里重新实现，批量的rpop操作，redisson自带的功能drainTo好像有点问题，会重复的rpush
+     * @param key
+     * @param size
+     * @return
+     */
+    public List<Object> outQueueRPop(String key, int size){
+        List<Object> list = new ArrayList<>();
+
+        List<Object> keys = new ArrayList<>();
+        keys.add(key);
+        //这里不能做为values因为内部会当成Integer，序列化为对象，太坑了。
+        keys.add(size);
+
+        RScript rScript = redissonClient.getScript();
+        ArrayList l = rScript.eval(RScript.Mode.READ_WRITE, "local elemNum = tonumber(KEYS[2]);"
+                        + "local vals = redis.call('lrange', KEYS[1], -elemNum, -1);"
+                        + "redis.call('ltrim', KEYS[1], 0, -elemNum-1);"
+                        + "return vals"
+                , RScript.ReturnType.MULTI, keys);
+        if(l!=null && l.size()>0){
+            list.addAll(l);
+        }
+
         return list;
     }
 
