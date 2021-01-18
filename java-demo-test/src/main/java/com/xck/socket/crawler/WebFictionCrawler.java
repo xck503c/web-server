@@ -1,5 +1,8 @@
 package com.xck.socket.crawler;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+
 /**
  * @Classname WebFictionCrawler
  * @Description TODO
@@ -10,5 +13,9 @@ public class WebFictionCrawler {
 
     public static void main(String[] args) {
 
+        String key = "全职法师";
+
+        HttpPost httpPost = new HttpPost("http://www.baidu.com");
+//        HttpClient httpClient =
     }
 }

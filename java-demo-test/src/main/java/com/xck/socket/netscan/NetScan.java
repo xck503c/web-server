@@ -2,9 +2,7 @@ package com.xck.socket.netscan;
 
 
 import java.io.*;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -34,8 +32,17 @@ public class NetScan {
         List<String> segments = localSegment();
         Set<String> ips = scanIp(segments);
 
-        executor.shutdownNow();
+        while (runnables.size() > 0){
+            Thread.sleep(1000);
+        }
+
+        executor.shutdown();
         while (!executor.awaitTermination(1, TimeUnit.SECONDS)) {}
+
+        //扫描端口
+        scanPort(ips, 80);
+        scanPort(ips, 8080);
+        scanPort(ips, 433);
 
         calJumpRouter(ips);
     }
@@ -56,7 +63,7 @@ public class NetScan {
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
-                        CmdResult cmdResult = execCmd("ping " + ip + " -n 1 -w 500");
+                        CmdResult cmdResult = execCmd(pingCmdStr(ip));
                         if (cmdResult.isSuc) {
                             System.out.println("scan ip " + ip);
                             ips.add(ip);
@@ -67,6 +74,41 @@ public class NetScan {
         }
         System.out.println(ips);
         return ips;
+    }
+
+    private static void scanPort(Set<String> ips, int port){
+        System.out.println("探测端口:" + port);
+        for (String ip : ips) {
+            try {
+                Socket socket = new Socket();
+                socket.setSoTimeout(200);
+                socket.connect(new InetSocketAddress(ip, port), 200);
+                if(socket.isConnected()){
+                    System.out.println("ip=" + ip + ", 端口" + port + "开启");
+                    OutputStream os = socket.getOutputStream();
+                    os.write("ffff".getBytes());
+                    os.flush();
+                    InputStream is = socket.getInputStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    String len = null;
+                    while ((len = br.readLine()) != null){
+                        System.out.println(len);
+                    }
+                }
+
+                socket.close();
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    private static String pingCmdStr(String ip){
+        String osType = System.getProperty("os.name").toLowerCase();
+        if(osType.contains("windows")){
+            return "ping " + ip + " -n 1 -w 500";
+        }else{
+            return "ping " + ip + " -c 1 -t 100 -W 100";
+        }
     }
 
     private static List<String> localSegment() throws Exception{
@@ -110,7 +152,7 @@ public class NetScan {
             }
             process.destroy();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("exec cmd=" + cmd + ", msg=" + e.getMessage());
         }
         return new CmdResult(sb.toString(), false);
     }
