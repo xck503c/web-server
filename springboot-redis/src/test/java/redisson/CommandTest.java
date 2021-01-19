@@ -18,10 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = RunMain.class)
@@ -205,6 +202,28 @@ public class CommandTest {
         t3.start();
 
         Thread.sleep(30000000);
+    }
+
+    @Test
+    public void inc(){
+        try {
+            RBatch rBatch = redissonPool.getClient().createBatch();
+            List<RFuture<Long>> list = new ArrayList<>();
+            for(int i=0; i<10; i++){
+                RAtomicLongAsync rAtomicLongAsync = rBatch.getAtomicLong("adder");
+                RFuture<Long> r = rAtomicLongAsync.incrementAndGetAsync();
+                rAtomicLongAsync.expireAtAsync(600);
+                list.add(r);
+            }
+            rBatch.execute();
+            for(RFuture<Long> rFuture : list){
+                System.out.println(rFuture.get());
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     public class Sms implements Serializable {
