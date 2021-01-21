@@ -55,6 +55,18 @@ public class RedisPool {
         }
     }
 
+    public void close(){
+        if ("single".equals(mode)) {
+            if(jedisPool != null){
+                jedisPool.close();
+            }
+        }else {
+            if(jedisSentinelPool != null){
+                jedisSentinelPool.close();
+            }
+        }
+    }
+
 
     public Jedis getJedis(){
         if ("single".equals(mode)) {
@@ -246,6 +258,31 @@ public class RedisPool {
         return null;
     }
 
+    private String script = "local elemNum = tonumber(ARGV[1]);"
+            + "local vals = redis.call('lrange', KEYS[1], -elemNum, -1);"
+            + "redis.call('ltrim', KEYS[1], 0, -elemNum-1);"
+            + "return vals";
+    public List<Object> outQueueRPop(String key, int size){
+        List<Object> list = new ArrayList<>();
+
+        List<String> keys = new ArrayList<>();
+        keys.add(key);
+        //这里不能做为values因为内部会当成Integer，序列化为对象，太坑了。
+        List<String> args = new ArrayList<>();
+        args.add(size+"");
+
+        Jedis jedis = null;
+        try{
+            jedis = getJedis();
+            List<Object> tmp = (List<Object>)jedis.eval(script, keys, args);
+            System.out.println(tmp);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public void lpushMulit(String listKey, List<String> list){
         Jedis jedis = null;
         try {
@@ -344,6 +381,21 @@ public class RedisPool {
         try {
             jedis = getJedis();
             jedis.sismember(key, member);
+            result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            returnJedis(jedis);
+        }
+        return result;
+    }
+
+    public boolean setnx(String key, String member){
+        Jedis jedis = null;
+        boolean result = false;
+        try {
+            jedis = getJedis();
+            jedis.setnx(key, member);
             result = true;
         } catch (Exception e) {
             e.printStackTrace();

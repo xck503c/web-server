@@ -1,5 +1,6 @@
 package com.xck.config;
 
+import com.xck.redis.RedisPool;
 import com.xck.redis.RedissonPool;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,5 +19,12 @@ public class DBConfig {
     @Bean(destroyMethod = "close")
     public RedissonPool redissonPool(RedisProperties redisProperties){
         return new RedissonPool().init(redisProperties);
+    }
+
+    @Bean(destroyMethod = "close")
+    public RedisPool redisPool(){
+        RedisPool testPool = new RedisPool();
+        testPool.init();
+        return testPool;
     }
 }

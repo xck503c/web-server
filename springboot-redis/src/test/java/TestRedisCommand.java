@@ -178,4 +178,14 @@ public class TestRedisCommand {
             }
         }
     }
+
+    @Test
+    public void testoutQueue(){
+        String key = "a";
+
+        RedisPool pool = new RedisPool();
+        pool.init();
+
+        pool.outQueueRPop(key, 10);
+    }
 }
