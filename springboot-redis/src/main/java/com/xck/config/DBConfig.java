@@ -5,6 +5,7 @@ import com.xck.redis.RedissonPool;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
  * @Classname DBConfig
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
  * @Created by xck503c
  */
 @Configuration
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableConfigurationProperties
 public class DBConfig {
 
