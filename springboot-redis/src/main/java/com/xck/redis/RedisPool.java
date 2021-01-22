@@ -1,5 +1,7 @@
 package com.xck.redis;
 
+import com.xck.redisDistributeLock.RedisNoFairLock;
+import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.*;
 
 import java.util.*;
@@ -419,6 +421,33 @@ public class RedisPool {
         }
         return b;
 //        return longStr.getBytes();
+    }
+
+    @RedisNoFairLock(lockName = "${lockKey}", timeout = 15000)
+    public void inc(){
+        Jedis jedis = null;
+        int testCount = 0;
+        try {
+            jedis = getJedis();
+            if (jedis != null) {
+                String strValue = jedis.get("testCount");
+                if(StringUtils.isBlank(strValue)){
+                    jedis.set("testCount", "1");
+                    testCount = 1;
+                }else {
+                    testCount = Integer.parseInt(strValue);
+                    ++testCount;
+                    jedis.set("testCount", testCount+"");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            returnJedis(jedis);
+
+            System.out.println(String.format(
+                    "线程id: %d, 自增值: %d", Thread.currentThread().getId(), testCount));
+        }
     }
 
     //

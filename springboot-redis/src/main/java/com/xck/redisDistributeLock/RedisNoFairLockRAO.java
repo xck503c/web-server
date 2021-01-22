@@ -7,16 +7,12 @@ import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RedisNoFairLockRAO {
 
     @Autowired
     RedisPool redisPool;
-
-    private static Map<String, RedisLockWatchThread> timerThreadCenter = new ConcurrentHashMap<>();
 
 
     /**
@@ -58,7 +54,7 @@ public class RedisNoFairLockRAO {
             + "end; "
             + "return 1";
 
-    public long lock(String lockKey, String taskId, String timeout){
+    public long lock(String lockKey, String taskId, long timeout){
         long result = -1;
         Jedis jedis = null;
         try {
@@ -69,7 +65,7 @@ public class RedisNoFairLockRAO {
 
                 List<String> args = new ArrayList<>(2);
                 args.add(taskId);
-                args.add(timeout);
+                args.add(timeout+"");
 
                 result = (Long)jedis.eval(lockScript, keys, args);
             }
@@ -77,9 +73,6 @@ public class RedisNoFairLockRAO {
             e.printStackTrace();
         } finally {
             redisPool.returnJedis(jedis);
-            if(result == 0){
-                taskRunning(lockKey, taskId, timeout);
-            }
         }
         return result;
     }
@@ -102,14 +95,11 @@ public class RedisNoFairLockRAO {
             e.printStackTrace();
         } finally {
             redisPool.returnJedis(jedis);
-            if(result == 0){
-                taskWait(lockKey);
-            }
         }
         return result;
     }
 
-    public long continuationOfLife(String lockKey, String taskId, String timeout){
+    public long continuationOfLife(String lockKey, String taskId, long timeout){
         Jedis jedis = null;
         long result = -1;
         try {
@@ -120,7 +110,7 @@ public class RedisNoFairLockRAO {
 
                 List<String> args = new ArrayList<>(1);
                 args.add(taskId);
-                args.add(timeout);
+                args.add(timeout+"");
 
                 result = (Long)jedis.eval(continuationOfLifeScript, keys, args);
             }
@@ -130,28 +120,5 @@ public class RedisNoFairLockRAO {
             redisPool.returnJedis(jedis);
         }
         return result;
-    }
-
-    public void taskRunning(String redisKey, String taskId, String timeout){
-        RedisLockWatchThread t = timerThreadCenter.get(redisKey);
-        if(t == null){
-            timerThreadCenter.put(redisKey, t = new RedisLockWatchThread(this, redisKey, timeout, taskId));
-        }
-        t.taskRunningState();
-        if(t.getState() == Thread.State.NEW){
-            t.start();
-        }
-    }
-
-    public void taskWait(String redisKey){
-        RedisLockWatchThread t = timerThreadCenter.get(redisKey);
-        if(t != null){
-            t.lockWaitState();
-        }
-    }
-
-    @RedisShareLock
-    public void aaaa(){
-        System.out.println("aaaa");
     }
 }

@@ -1,6 +1,6 @@
 import com.xck.RunMain;
+import com.xck.redis.RedisPool;
 import com.xck.redisDistributeLock.RedisNoFairLockRAO;
-import com.xck.redisDistributeLock.RedisShareLock;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,9 @@ import java.util.concurrent.CountDownLatch;
 public class TestRedisDistributeLock {
 
     @Autowired
+    RedisPool redisPool;
+
+    @Autowired
     RedisNoFairLockRAO redisNoFairLockRAO;
 
     private static int i = 0;
@@ -22,68 +25,47 @@ public class TestRedisDistributeLock {
 
     @Test
     public void main() throws Exception{
-        int threadSize = 6;
+        int threadSize = 3;
 
         start = new CountDownLatch(threadSize);
         end = new CountDownLatch(threadSize);
 
         for(int i=0; i<threadSize; i++){
-            Thread t = new Thread(new IncTask(redisNoFairLockRAO));
+            Thread t = new Thread(new IncTask(redisPool));
             t.start();
         }
+//        Thread t = new Thread(new IncTaskMy(redisNoFairLockRAO, redisPool, false));
+//        t.start();
+//        t = new Thread(new IncTaskMy(redisNoFairLockRAO, redisPool, true));
+//        t.start();
+//        t = new Thread(new IncTaskMy(redisNoFairLockRAO, redisPool, false));
+//        t.start();
 
         end.await();
 
         System.out.println(i);
     }
 
-    @Test
-    public void ana() throws Exception{
-        redisNoFairLockRAO.aaaa();
-    }
-
     private static class IncTask implements Runnable{
 
-        private String id;
-        private RedisNoFairLockRAO redisNoFairLockRAO;
+        private RedisPool redisPool;
 
-        public IncTask(RedisNoFairLockRAO redisNoFairLockRAO) {
-            this.redisNoFairLockRAO = redisNoFairLockRAO;
+        public IncTask(RedisPool redisPool) {
+            this.redisPool = redisPool;
         }
 
         @Override
         public void run() {
             try {
-                id = Thread.currentThread().getName();
                 start.countDown();
                 start.await();
 
-                int count = 0;
-                while (true){
-                    long result = redisNoFairLockRAO.lock("countKey", id, "30000");
-                    if(result == 0){
-                        System.out.println(id + " 加锁成功");
-                        try{
-                            ++i;
-                            System.out.println(i);
-                            ++count;
-                            Thread.sleep(100);
-                        }finally {
-                            redisNoFairLockRAO.unlock("countKey", id);
-                            System.out.println(id + " 解锁成功 count=" + count);
-                            Thread.sleep(100);
-                        }
-                    }else {
-                        if(result == -1){
-                            Thread.sleep(3000);
-                            continue;
-                        }else {
-                            Thread.sleep(1000);
-                        }
+                try {
+                    for (int i=0; i<100; ++i) {
+                        redisPool.inc();
                     }
-                    if(count >= 100){
-                        break;
-                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 end.countDown();
@@ -92,4 +74,65 @@ public class TestRedisDistributeLock {
             }
         }
     }
+
+//    private static class IncTaskMy implements Runnable{
+//
+//        private RedisNoFairLockRAO redisNoFairLockRAO;
+//        private RedisPool redisPool;
+//        private boolean isBreak;
+//
+//        public IncTaskMy(RedisNoFairLockRAO redisNoFairLockRAO, RedisPool redisPool, boolean isBreak) {
+//            this.redisNoFairLockRAO = redisNoFairLockRAO;
+//            this.redisPool = redisPool;
+//            this.isBreak = isBreak;
+//        }
+//
+//        @Override
+//        public void run() {
+//            try {
+//                start.countDown();
+//                start.await();
+//
+//                long sTime = System.currentTimeMillis();
+//                long startTime;
+//                try {
+//                    long lockResult = -1;
+//                    for (int i=0; i<300; ++i) {
+//                        while (true) {
+//                            lockResult = redisNoFairLockRAO.lock("lockKey"
+//                                    , Thread.currentThread().getId()+"", "10000");
+//                            if(lockResult != 0){
+//                                System.out.println(String.format("线程id: %d, 尝试拿锁失败, 时间戳: %d, 睡眠3s"
+//                                        , Thread.currentThread().getId(), System.currentTimeMillis()));
+//                                Thread.sleep(3000);
+//                                continue;
+//                            }
+//                            break;
+//                        }
+//                        System.out.println(String.format("线程id: %d, 拿锁成功, 时间戳: %d"
+//                                , Thread.currentThread().getId(), startTime = System.currentTimeMillis()));
+//                        redisPool.inc();
+//
+//                        if(isBreak && System.currentTimeMillis() - sTime > 3000){
+//                            System.out.println(i + "    break ---------------------------------------------------");
+//                            break;
+//                        }else {
+//                            long unlockResult = redisNoFairLockRAO.unlock("lockKey", Thread.currentThread().getId()+"");
+//                            if(unlockResult == 0){
+//                                System.out.println(String.format("线程id: %d, 释放锁, 时间戳: %d, 耗时: %d"
+//                                        , Thread.currentThread().getId(), System.currentTimeMillis()
+//                                        , System.currentTimeMillis()-startTime));
+//                            }
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//
+//                end.countDown();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 }

@@ -6,10 +6,10 @@ public class RedisLockWatchThread extends Thread implements WatchState{
 
     private String redisKey;
     private RedisNoFairLockRAO redisNoFairLockRAO;
-    private String timeout;
+    private long timeout;
     private String taskId;
 
-    public RedisLockWatchThread(RedisNoFairLockRAO redisNoFairLockRAO, String redisKey, String timeout, String taskId){
+    public RedisLockWatchThread(RedisNoFairLockRAO redisNoFairLockRAO, String redisKey, long timeout, String taskId){
         setDaemon(true);
         setName("RedisLockWatchThread-" + redisKey);
         this.redisKey = redisKey;
@@ -36,8 +36,7 @@ public class RedisLockWatchThread extends Thread implements WatchState{
             try {
                 if(state){
                     long result = redisNoFairLockRAO.continuationOfLife(redisKey, taskId, timeout);
-                    long timeoutLong = Long.parseLong(timeout);
-                    Thread.sleep(timeoutLong/3);
+                    Thread.sleep(timeout/3);
                 }else {
                     Thread.sleep(10000);
                 }
