@@ -1,4 +1,4 @@
-package com.xck.queue.freelock;
+package com.xck.jdk.queue.freelock;
 
 import sun.misc.Unsafe;
 

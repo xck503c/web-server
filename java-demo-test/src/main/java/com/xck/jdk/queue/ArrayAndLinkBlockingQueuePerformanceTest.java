@@ -1,4 +1,4 @@
-package com.xck.queue;
+package com.xck.jdk.queue;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
