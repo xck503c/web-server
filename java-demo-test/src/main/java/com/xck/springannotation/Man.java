@@ -17,9 +17,4 @@ public class Man {
 
     @Autowired
     public Name name;
-
-    @Service
-    private class Pep{
-
-    }
 }
