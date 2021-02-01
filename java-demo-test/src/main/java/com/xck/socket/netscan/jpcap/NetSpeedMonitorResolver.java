@@ -4,6 +4,8 @@ import jpcap.packet.Packet;
 import jpcap.packet.TCPPacket;
 import jpcap.packet.UDPPacket;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -18,6 +20,9 @@ public class NetSpeedMonitorResolver {
     private static volatile int uploadSpeed = 0;
     private static volatile int downlowdSpeed = 0;
     private static volatile long lastSecond = System.currentTimeMillis();
+    private static volatile long lastIpSecond = System.currentTimeMillis();
+
+    private static Map<String, Long> ipsMap = new HashMap<>();
 
     public static void monitor(Packet packet, String localIp){
 
@@ -35,6 +40,18 @@ public class NetSpeedMonitorResolver {
                 uploadSpeed = 0;
                 downlowdSpeed = 0;
             }
+            if(cur - lastIpSecond >= 10000){
+
+                Long total = ipsMap.values().stream().mapToLong(Long::longValue).sum();
+
+                System.out.println("总次数: " + total);
+                ipsMap.entrySet().stream().forEach(x -> {
+                    System.out.println(String.format("ip: %s, 比例: %.2f"
+                            ,x.getKey(), x.getValue()/(float)total));
+                });
+                lastIpSecond = cur;
+                ipsMap.clear();
+            }
 
             String srcIp = "";
             String dstIp = "";
@@ -49,12 +66,26 @@ public class NetSpeedMonitorResolver {
             if(!srcIp.equals("")){
                 if(srcIp.equals(localIp)){
                     uploadSpeed += packet.caplen;
+                    inc(dstIp);
                 }else if(dstIp.equals(localIp)){
                     downlowdSpeed += packet.caplen;
+                    inc(srcIp);
+                }else {
+                    System.out.println("xxxx");
                 }
             }
         } finally {
             sync.set(false);
+        }
+    }
+
+    public static void inc(String ip){
+        Long l = ipsMap.get(ip);
+        if(l == null){
+            ipsMap.put(ip, 1L);
+        }else{
+            ++l;
+            ipsMap.put(ip, l);
         }
     }
 }
