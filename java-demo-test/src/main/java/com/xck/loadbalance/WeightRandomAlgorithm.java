@@ -1,8 +1,11 @@
 package com.xck.loadbalance;
 
+import com.xck.check.reactor.TaskPutBlockPolicy;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.*;
 
 /**
  * 功能：测试加权随机的两种实现方案
@@ -22,11 +25,16 @@ public class WeightRandomAlgorithm {
             allWeight+=server.list.get(j).weight;
         }
         System.out.println("weight: " + allWeight);
-        for(int i=0; i<3000000; i++){
-            System.out.println(); //若没有这行循环速度太快了，导致纳米级别的也不能均匀随机出随机数
-            randomWeight(server, allWeight);
-        }
+
+        randomWeightMultiThread(server, allWeight);
+
+//        for(int i=0; i<3000000; i++){
+//            System.out.println(); //若没有这行循环速度太快了，导致纳米级别的也不能均匀随机出随机数
+//            randomWeight(server, allWeight);
+//        }
         System.out.println(server.list);
+
+
     }
 
     public static void randomWeight(Server server, int allWeight){
@@ -49,6 +57,38 @@ public class WeightRandomAlgorithm {
 //        }else if(random<=10){
 //            server.list.get(3).hit();
 //        }
+    }
+
+    private static BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(200);
+    private static ThreadPoolExecutor pool = new ThreadPoolExecutor(8,
+            8, 60, TimeUnit.SECONDS, workQueue, new TaskPutBlockPolicy(workQueue));
+    public static void randomWeightMultiThread(final Server server, final int allWeight){
+
+        int count = 80;
+
+        while (count-->0){
+            final Integer seed = count;
+            pool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    ThreadLocalRandom randomGen = ThreadLocalRandom.current();
+                    int random = randomGen.nextInt(allWeight) + 1;
+                    for(int j=0; j<server.list.size(); j++){
+                        if(random <= server.list.get(j).weight){
+                            server.list.get(j).hit();
+                            return;
+                        }
+                        random -= server.list.get(j).weight;
+                    }
+                }
+            });
+        }
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void randomWeightaddList(){
