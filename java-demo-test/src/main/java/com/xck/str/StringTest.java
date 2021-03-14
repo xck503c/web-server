@@ -2,17 +2,31 @@ package com.xck.str;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StringTest {
 
     public static void main(String[] args) throws Exception{
-        System.out.println("UNDELIV".getBytes("ISO8859_1").length);
-        System.out.println("DELIVRD".getBytes("ISO8859_1").length);
+//        System.out.println("UNDELIV".getBytes("ISO8859_1").length);
+//        System.out.println("DELIVRD".getBytes("ISO8859_1").length);
+
+        TimeZone tz = TimeZone.getTimeZone("ETC/GMT-8");
+        TimeZone.setDefault(tz);
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");//设置日期格式
+//        ParsePosition pos = new ParsePosition(0);
+        Date now =new Date();
+        String tCurrentdate = df.format(now);
+        Date tCurrentdates = df.parse(tCurrentdate);
+        System.out.println(tCurrentdate);
+        System.out.println(tCurrentdates);
+
+
     }
 
     public static void HHmmss(){

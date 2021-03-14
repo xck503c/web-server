@@ -1,4 +1,4 @@
-package com.xck.queue;
+package com.xck.jdk.queue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;

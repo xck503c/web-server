@@ -25,7 +25,13 @@ public class TempleteContentTest {
 
     public static void main(String[] args) {
 //        testFourTempleteAndRnandom();
-        testMultiTemplete();
+//        testMultiTemplete();
+        String mobile="xck1503c503c503c503c503c503c";
+        String patternStr = ".*xck(.*)503c*";
+        Pattern pattern = Pattern.compile(patternStr);
+        Matcher matcher = pattern.matcher(mobile);
+        System.out.println(matcher.find());
+        System.out.println(matcher.group(1));
     }
 
     //匹配的字符串长度: 343
@@ -38,7 +44,7 @@ public class TempleteContentTest {
 
         System.out.println("匹配的字符串长度: " + length);
 
-        String[] templeteArr = templeteStr.replaceAll("... ...", ".*").split("\n");
+        String[] templeteArr = templeteStr.split("\n");
         System.out.println("模板数量: " + templeteArr.length);
 
         long useTime = 0;
@@ -46,8 +52,10 @@ public class TempleteContentTest {
         for (int i=0; i<20; i++) {
             long start = System.currentTimeMillis();
             for(String templete : templeteArr){
+                templete = templete.replaceFirst("... ...", ".?")
+                        .replaceFirst("... ...", ".*近日.?");
                 Pattern pattern = Pattern.compile(templete);
-                match(content, pattern);
+                System.out.println(match(content, pattern));;
             }
             long diff = System.currentTimeMillis() - start;
             useMaxTime = diff > useMaxTime ? diff : useMaxTime;
@@ -1305,7 +1313,8 @@ public class TempleteContentTest {
             "... ...【巨人网络】... ...\n" +
             "... ...【多多数字】... ...\n" +
             "... ...【ZARA】... ...\n" +
-            "... ...【展商秀】... ...\n";
+            "... ...【展商秀】... ...\n" +
+            "... ...【建屋物业明日星城管理处】... ...\n";
 }
 
 
