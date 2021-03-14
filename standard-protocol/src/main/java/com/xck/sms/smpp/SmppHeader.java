@@ -1,4 +1,4 @@
-package com.xck.smpp;
+package com.xck.sms.smpp;
 
 import io.netty.buffer.ByteBuf;
 

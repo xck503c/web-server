@@ -1,8 +1,7 @@
-package com.xck.server;
+package com.xck.sms.server;
 
-import com.xck.cmpp.CmppUserBean;
-import com.xck.cmpp.UserBean;
-import org.apache.commons.lang3.StringUtils;
+import com.xck.sms.cmpp.CmppUserBean;
+import com.xck.sms.cmpp.UserBean;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;

@@ -1,9 +1,9 @@
-package com.xck.cmpp;
+package com.xck.sms.cmpp;
 
 
-import com.xck.Handler;
-import com.xck.server.ServerConnectRegistry;
-import com.xck.util.StringUtils;
+import com.xck.sms.Handler;
+import com.xck.sms.server.ServerConnectRegistry;
+import com.xck.sms.util.StringUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -11,7 +11,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class CmppUserBean {
-    private  ReentrantLock userLock = new ReentrantLock();
+    private ReentrantLock userLock = new ReentrantLock();
     private ReentrantLock seqLock = new ReentrantLock();
     private String requestIp;
 

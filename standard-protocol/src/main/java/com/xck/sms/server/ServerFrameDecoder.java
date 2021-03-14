@@ -1,6 +1,6 @@
-//package com.xck.server;
+//package com.xck.sms.server;
 //
-//import com.xck.cmpp.CmppMessage;
+//import com.xck.sms.cmpp.CmppMessage;
 //import io.netty.buffer.ByteBuf;
 //import io.netty.channel.ChannelHandlerContext;
 //import io.netty.handler.codec.LengthFieldBasedFrameDecoder;

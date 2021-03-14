@@ -1,7 +1,4 @@
-import com.xck.cmpp.CmppConnectMessage;
-import com.xck.cmpp.CmppHeader;
-import com.xck.cmpp.CmppMessage;
-import com.xck.util.StringUtils;
+import com.xck.sms.util.StringUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;

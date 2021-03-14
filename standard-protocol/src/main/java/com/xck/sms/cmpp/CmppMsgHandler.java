@@ -1,4 +1,4 @@
-package com.xck.cmpp;
+package com.xck.sms.cmpp;
 
 /**
  * cmpp报文处理器，专门处理报文

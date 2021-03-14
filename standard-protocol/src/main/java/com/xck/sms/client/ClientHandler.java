@@ -1,7 +1,7 @@
-package com.xck.client;
+package com.xck.sms.client;
 
-import com.xck.Handler;
-import com.xck.cmpp.*;
+import com.xck.sms.Handler;
+import com.xck.sms.cmpp.*;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

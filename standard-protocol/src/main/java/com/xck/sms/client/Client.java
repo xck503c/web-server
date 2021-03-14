@@ -1,4 +1,4 @@
-package com.xck.client;
+package com.xck.sms.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;

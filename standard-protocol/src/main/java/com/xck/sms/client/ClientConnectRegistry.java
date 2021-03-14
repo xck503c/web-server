@@ -1,7 +1,7 @@
-package com.xck.client;
+package com.xck.sms.client;
 
-import com.xck.cmpp.CmppUserBean;
-import com.xck.cmpp.UserBean;
+import com.xck.sms.cmpp.CmppUserBean;
+import com.xck.sms.cmpp.UserBean;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;

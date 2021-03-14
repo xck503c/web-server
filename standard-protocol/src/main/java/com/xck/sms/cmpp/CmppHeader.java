@@ -1,4 +1,4 @@
-package com.xck.cmpp;
+package com.xck.sms.cmpp;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

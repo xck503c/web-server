@@ -1,4 +1,4 @@
-package com.xck.cmpp;
+package com.xck.sms.cmpp;
 
 import java.util.HashMap;
 import java.util.Map;

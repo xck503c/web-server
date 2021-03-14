@@ -1,4 +1,4 @@
-package com.xck.server;
+package com.xck.sms.server;
 
 
 import io.netty.bootstrap.ServerBootstrap;

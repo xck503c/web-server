@@ -1,6 +1,4 @@
-package com.xck.util;
-
-import io.netty.buffer.ByteBuf;
+package com.xck.sms.util;
 
 import java.security.MessageDigest;
 
