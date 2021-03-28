@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_HOME">logs</Property>
+    </Properties>
+    <Appenders>
+         <!--info信息 -->
+        <RollingFile name="infoLog" fileName="${LOG_HOME}/info.log"
+                     filePattern="${LOG_HOME}/info.log.%d{yyyy-MM-dd}" immediateFlush="false">
+
+            <LogFilterUser onMatch="DENY" onMismatch="ACCEPT" level="INFO"/>
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+            </Policies>
+        </RollingFile>
+        <!-- 输出其他错误信息，例如文件等 -->
+        <RollingFile name="rootLog" fileName="${LOG_HOME}/error.log"
+                     filePattern="${LOG_HOME}/error.log.%d{yyyy-MM-dd}" immediateFlush="false">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p - %m%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT"  onMismatch="DENY"/>
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+            </Policies>
+        </RollingFile>
+        <!-- 线程的状态信息，和内存，队列 -->
+        <RollingFile name="monitor" fileName="${LOG_HOME}/monitor.log"
+                     filePattern="${LOG_HOME}/monitor.log.%d{yyyy-MM-dd}" immediateFlush="false">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+            </Policies>
+        </RollingFile>
+        <!-- 数据库 -->
+        <RollingFile name="dao" fileName="${LOG_HOME}/dao.log"
+                     filePattern="${LOG_HOME}/dao.log.%d{yyyy-MM-dd}" immediateFlush="false">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+            </Policies>
+        </RollingFile>
+
+        <!-- 长短信拼接日志 -->
+        <RollingFile name="long_sms_splice" fileName="${LOG_HOME}/long_sms_splice.log"
+                     filePattern="${LOG_HOME}/long_sms_splice.log.%d{yyyy-MM-dd}" immediateFlush="false">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+            </Policies>
+        </RollingFile>
+
+        <!-- 携号转网相关日志 -->
+        <RollingFile name="netswitch_info" fileName="${LOG_HOME}/netswitch_info.log"
+                     filePattern="${LOG_HOME}/netswitch_info.log.%d{yyyy-MM-dd}" immediateFlush="false">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+            </Policies>
+        </RollingFile>
+
+    </Appenders>
+    <Loggers>
+        <Logger name="long_sms_splice" level="info" additivity="false">
+            <AppenderRef ref="long_sms_splice" />
+        </Logger>
+        <Logger name="infoLog" level="info" additivity="false">
+            <AppenderRef ref="infoLog" />
+        </Logger>
+        <Logger name="monitor" level="info" additivity="false">
+            <AppenderRef ref="monitor" />
+        </Logger>
+        <Logger name="dao" level="info" additivity="false">
+            <AppenderRef ref="dao" />
+        </Logger>
+        <Logger name="netswitch_info" level="info" additivity="false">
+            <AppenderRef ref="netswitch_info" />
+        </Logger>
+        <Root level="error" includeLocation="false">
+            <AppenderRef ref="rootLog" />
+        </Root>
+    </Loggers>
+</Configuration>
