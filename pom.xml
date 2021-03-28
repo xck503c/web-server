@@ -13,7 +13,6 @@
         <module>springboot-redis</module>
         <module>data-transfer-service</module>
         <module>rocketmq-cli</module>
-        <module>Sharding-DB</module>
         <module>back-service</module>
         <module>java-demo-test</module>
         <module>xxl-job-test</module>
