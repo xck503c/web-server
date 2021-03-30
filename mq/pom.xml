@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rocketmq-cli</artifactId>
+    <artifactId>mq</artifactId>
 
     <dependencies>
         <dependency>

@@ -1,5 +1,5 @@
 import com.alibaba.fastjson.JSONObject;
-import com.xck.SmsMessage;
+import com.xck.rocketmq.SmsMessage;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
