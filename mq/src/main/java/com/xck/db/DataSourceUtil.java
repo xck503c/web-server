@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DataSourceUtil {
-    private static String url = "jdbc:mysql://192.168.130.21:30521/xck_tmp1?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true";
+    private static String url = "jdbc:mysql://192.168.130.21:30521/cluster_server_xck?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true";
     private static String username = "sms";
     private static String pwd = "hstest@2014";
 
