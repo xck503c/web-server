@@ -1,6 +1,7 @@
 package com.xck.str;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,12 +27,7 @@ public class TempleteContentTest {
     public static void main(String[] args) {
 //        testFourTempleteAndRnandom();
 //        testMultiTemplete();
-        String mobile="xck1503c503c503c503c503c503c";
-        String patternStr = ".*xck(.*)503c*";
-        Pattern pattern = Pattern.compile(patternStr);
-        Matcher matcher = pattern.matcher(mobile);
-        System.out.println(matcher.find());
-        System.out.println(matcher.group(1));
+        testMultiTemplete1();
     }
 
     //匹配的字符串长度: 343
@@ -64,6 +60,41 @@ public class TempleteContentTest {
 
         System.out.println(String.format("最大耗时%dms", useMaxTime));
         System.out.println(String.format("调用20次，匹配模板平均耗时%fms", ((double)useTime/20)));
+    }
+
+    public static void testMultiTemplete1(){
+        String content = "【建屋物业明日星城管理处】尊敬的明日星城业主您好：近日受强冷空气影响，我市将有中到大雪，气温下降8-12度，建屋物业在此温馨提醒您：1、雨雪天气地面湿滑，请您外出时注意防滑，小心慢行；驾驶车辆外出时请谨慎慢行；3、在此期间，可能会出现大风现象，请您收回自家阳台和户外的花盆、衣物等易被风吹落的物品，以免高空坠物伤人；请不要在玻璃门窗、广告牌、大树附近行走或停留，以免发生意外；4、使用取暖器、电热毯等电器设备时请注意安全，离开房间要及时关闭电源，以免发生火灾；5、请您及时关好门窗，做好室内各种水阀的保温防冻措施，如外出长期不住时，请提前关好室外水阀，排空管内积水，避免造成管道冻裂；祝您阖家安康！物业服务热线：0527-82868166。24小时服务热线：0527-82868611。";
+        int length = content.length();
+
+        System.out.println("匹配的字符串长度: " + length);
+
+        String[] templeteArr = templeteStr.split("\n");
+        System.out.println("模板数量: " + templeteArr.length);
+
+        long useTime = 0;
+        long useMaxTime = 0;
+        for (int i=0; i<2000; i++) {
+            long start = System.currentTimeMillis();
+            for(String templete : templeteArr){
+                String[] keyWords = templete.split("... ...");
+                boolean isTre = true;
+                int index = -1;
+                for(String tmp : keyWords){
+                    if(StringUtils.isBlank(tmp)) continue;
+                    if((index = content.indexOf(tmp, index)) == -1){
+                        isTre = false;
+                        break;
+                    }
+                }
+//                if(isTre) sout
+            }
+            long diff = System.currentTimeMillis() - start;
+            useMaxTime = diff > useMaxTime ? diff : useMaxTime;
+            useTime+=diff;
+        }
+
+        System.out.println(String.format("最大耗时%dms", useMaxTime));
+        System.out.println(String.format("调用2000次，匹配模板平均耗时%fms", ((double)useTime/2000)));
     }
 
     public static void testFourTempleteAndRnandom(){
