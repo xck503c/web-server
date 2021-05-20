@@ -1,0 +1,10 @@
+<aspectj>
+    <weaver options="-Xset:weaveJavaxPackages=true">
+        <!--  要改变那些包下的类，有@NoWeave注解的会跳过。-->
+        <include within="com.alibaba.fastjson.*" />
+    </weaver>
+    <aspects>
+        <!-- 声明的切面 -->
+        <aspect name="com.xck.proxy.AspectJInJson" />
+    </aspects>
+</aspectj>

@@ -8,18 +8,20 @@ import java.util.concurrent.locks.Lock;
 public class Mutex implements Lock {
 
     // 真正同步类的实现都依赖继承于AQS的自定义同步器！
-    private final Sync sync = new Sync();
+    private final Sync sync;
 
-    private static class Sync extends AbstractQueuedSynchronizer{
-        @Override
-        protected boolean tryAcquire(int arg) {
-            //只有cas成功变为1才表示争夺资源成功
-            if(compareAndSetState(0, 1)){
-                //设置独占线程
-                setExclusiveOwnerThread(Thread.currentThread());
-                return true;
-            }
-            return false;
+    public Mutex() {
+        this.sync = new NoFairSync();
+    }
+
+    public Mutex(boolean isFair) {
+        this.sync = isFair ? new FairSync() : new NoFairSync();
+    }
+
+    private abstract class Sync extends AbstractQueuedSynchronizer{
+
+        boolean tryLock(){
+            return tryAcquire(1);
         }
 
         @Override
@@ -31,6 +33,37 @@ public class Mutex implements Lock {
             setState(0);
             return true;
         }
+
+        final ConditionObject newCondition() {
+            return new ConditionObject();
+        }
+    }
+
+    private class NoFairSync extends Sync{
+        @Override
+        protected boolean tryAcquire(int arg) {
+            //只有cas成功变为1才表示争夺资源成功
+            if(compareAndSetState(0, 1)){
+                //设置独占线程
+                setExclusiveOwnerThread(Thread.currentThread());
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private class FairSync extends Sync{
+        @Override
+        protected boolean tryAcquire(int arg) {
+            int c = getState();
+            //hasQueuedPredecessors是AQS封装的用来判断是否还有线程在排队
+            if(c == 0 && !hasQueuedPredecessors() && compareAndSetState(0, 1)){
+                //设置独占线程
+                setExclusiveOwnerThread(Thread.currentThread());
+                return true;
+            }
+            return false;
+        }
     }
 
     @Override
@@ -40,7 +73,7 @@ public class Mutex implements Lock {
 
     @Override
     public boolean tryLock() {
-        return sync.tryAcquire(1);
+        return sync.tryLock();
     }
 
     @Override
@@ -55,12 +88,12 @@ public class Mutex implements Lock {
 
     @Override
     public Condition newCondition() {
-        return null;
+        return sync.newCondition();
     }
 
-    @Override
-    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-        return false;
+    public boolean tryLock(long timeout, TimeUnit unit)
+            throws InterruptedException {
+        return sync.tryAcquireNanos(1, unit.toNanos(timeout));
     }
 
     public static void main(String[] args) {

@@ -1,16 +1,22 @@
+import com.alibaba.fastjson.JSON;
 import com.xck.RunMain;
+import com.xck.proxy.AspectJInJson;
+import com.xck.proxy.JSONService;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.rolling.RollingFileManager;
 import org.apache.logging.slf4j.Log4jLogger;
+import org.aspectj.lang.annotation.Aspect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 
 
 @RunWith(SpringRunner.class)
@@ -19,6 +25,15 @@ public class TestLog4j2 {
 
     static Logger infoLog = LoggerFactory.getLogger("infoLog");
     static RollingFileManager manager;
+
+    @Autowired
+    private JSONService jsonService;
+
+    @Test
+    public void testjson(){
+        jsonService.parse2String(new HashMap<>());
+        System.out.println( JSON.toJSONString(new HashMap<>()));
+    }
 
     @Before
     public void infoLog() throws Exception{
@@ -41,6 +56,8 @@ public class TestLog4j2 {
             infoLog.info("fs");
 
         System.out.println("fffff1");
+
+        Thread.sleep(10000);
 
         manager.flush();
 

@@ -119,6 +119,11 @@ public class RedisSet<T extends RedisBytesParser> extends AbstractSet<T> {
 
             return null; //出现异常，可以休眠
         }
+
+        @Override
+        public void remove() {
+
+        }
     }
 
     public static Object newObject(Class<?> clzz){
