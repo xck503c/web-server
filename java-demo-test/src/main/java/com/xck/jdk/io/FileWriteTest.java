@@ -1,4 +1,4 @@
-package com.xck.io;
+package com.xck.jdk.io;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

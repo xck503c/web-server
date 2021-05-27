@@ -1,4 +1,4 @@
-package com.xck.robot;
+package com.xck.jdk.robot;
 
 import javax.swing.*;
 import java.awt.*;

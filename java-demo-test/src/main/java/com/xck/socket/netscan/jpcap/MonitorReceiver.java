@@ -19,6 +19,6 @@ public class MonitorReceiver implements PacketReceiver {
 
     @Override
     public void receivePacket(Packet packet) {
-        NetSpeedMonitorResolver.monitor(packet, targetIps);
+//        NetSpeedMonitorResolver.monitor(packet, targetIps);
     }
 }

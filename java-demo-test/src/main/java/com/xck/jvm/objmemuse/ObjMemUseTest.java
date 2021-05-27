@@ -11,27 +11,8 @@ import org.openjdk.jol.info.ClassLayout;
 public class ObjMemUseTest {
 
     public static void main(String[] args) {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        while (true){
-                            System.out.println("daemon " + Thread.currentThread().getName());
-                        }
-                    }
-                });
-                t.setDaemon(true);
-                t.setName("xxxxfefdsf");
-                t.start();
-                while (true){
-                    System.out.println(Thread.currentThread().getName());
-                }
-            }
-        });
-        t.setName("xxxx");
-        t.start();
+        System.out.println((true&&true||false)&&false );
+        System.out.println(((true) && (true)) || ((false) && (false)));
     }
 
     public static void impleClass() {
@@ -40,12 +21,17 @@ public class ObjMemUseTest {
     }
 
     public static void stringClass() {
-        String s = "11111";
+        String s = "1";
         System.out.println(ClassLayout.parseInstance(s).toPrintable());
     }
 
     public static void charArrClass() {
         char[] c = new char[]{'1', '1', '1'};
+        System.out.println(ClassLayout.parseInstance(c).toPrintable());
+    }
+
+    public static void charClass() {
+        Character c = '你';
         System.out.println(ClassLayout.parseInstance(c).toPrintable());
     }
 }
