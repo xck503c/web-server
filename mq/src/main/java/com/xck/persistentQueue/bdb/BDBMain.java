@@ -1,11 +1,11 @@
-package com.xck.bdb;
+package com.xck.persistentQueue.bdb;
 
 public class BDBMain {
 
     public static void main(String[] args) {
         //String.class:value类型
         String path = System.getProperty("user.dir");
-        BdbPersistentQueue<String> queue = new BdbPersistentQueue<String>(path + "/mq/bdb", "test", String.class);
+        BDBPersistentQueue<String> queue = new BDBPersistentQueue<String>(path + "/mq/bdb", "test", String.class);
         queue.offer("first");
         queue.offer("double");
         queue.offer("String");

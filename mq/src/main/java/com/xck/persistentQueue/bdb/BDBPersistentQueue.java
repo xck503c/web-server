@@ -1,7 +1,6 @@
-package com.xck.bdb;
+package com.xck.persistentQueue.bdb;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Iterator;
@@ -23,7 +22,7 @@ import com.sleepycat.je.EnvironmentConfig;
  * @contributor
  * @param <E>
  */
-public class BdbPersistentQueue<E extends Serializable> extends AbstractQueue<E> implements
+public class BDBPersistentQueue<E extends Serializable> extends AbstractQueue<E> implements
         Serializable {
     private static final long serialVersionUID = 3427799316155220967L;
     private transient BdbEnvironment dbEnv;            // 数据库环境,无需序列化
@@ -44,7 +43,7 @@ public class BdbPersistentQueue<E extends Serializable> extends AbstractQueue<E>
      * @param valueClass
      * @param classCatalog
      */
-    public BdbPersistentQueue(Database db,Class<E> valueClass,StoredClassCatalog classCatalog){
+    public BDBPersistentQueue(Database db, Class<E> valueClass, StoredClassCatalog classCatalog){
         this.queueDb=db;
         this.dbName=db.getDatabaseName();
         headIndex=new AtomicLong(0);
@@ -58,9 +57,7 @@ public class BdbPersistentQueue<E extends Serializable> extends AbstractQueue<E>
      * @param dbName
      * @param valueClass
      */
-    public BdbPersistentQueue(String dbDir,String dbName,Class<E> valueClass){
-        //headIndex=new AtomicLong(0);
-        //tailIndex=new AtomicLong(0);
+    public BDBPersistentQueue(String dbDir, String dbName, Class<E> valueClass){
         this.dbDir=dbDir;
         this.dbName=dbName;
         createAndBindDatabase(dbDir,dbName,valueClass);
@@ -124,7 +121,8 @@ public class BdbPersistentQueue<E extends Serializable> extends AbstractQueue<E>
             dbConfig.setTransactional(false);
             //是否要延迟写
             dbConfig.setDeferredWrite(true);
-
+//            envConfig.setConfigParam(EnvironmentConfig.CLEANER_MIN_UTILIZATION, "90");
+//            envConfig.setConfigParam(EnvironmentConfig.CLEANER_EXPUNGE, "true");
             // 创建环境
             dbEnv = new BdbEnvironment(envFile, envConfig);
             // 打开数据库
@@ -171,15 +169,6 @@ public class BdbPersistentQueue<E extends Serializable> extends AbstractQueue<E>
     public boolean offer(E e) {
         synchronized(tailIndex){
             queueMap.put(tailIndex.getAndIncrement(), e);// 从尾部插入
-//            if (tailIndex.get()==0){
-//                //i++:先将值赋给再加1
-//                queueMap.put(tailIndex.get(), e);// 从0插入
-//            }else {
-//                //增加并获取++i;先增加再返回
-//                queueMap.put(tailIndex.incrementAndGet(), e);// 从尾部插入
-//            }
-            //将数据不保存在缓冲区，直接存入磁盘
-//            dbEnv.sync();
         }
         return true;
     }
@@ -214,8 +203,6 @@ public class BdbPersistentQueue<E extends Serializable> extends AbstractQueue<E>
             E headItem=peek();
             if(headItem!=null){
                 queueMap.remove(headIndex.getAndIncrement());
-                //从磁盘上移除
-//                dbEnv.sync();
                 peekItem=null;
                 return headItem;
             }
@@ -230,6 +217,10 @@ public class BdbPersistentQueue<E extends Serializable> extends AbstractQueue<E>
             if(queueDb!=null){
                 queueDb.sync();
                 queueDb.close();
+            }
+            if (dbEnv != null){
+                dbEnv.cleanLog();
+                dbEnv.close();
             }
         } catch (DatabaseException e) {
             // TODO Auto-generated catch block
