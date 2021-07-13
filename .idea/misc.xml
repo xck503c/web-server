@@ -5,12 +5,15 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/mq/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
       <set>
+        <option value="$PROJECT_DIR$/Sharding-DB/pom.xml" />
         <option value="$PROJECT_DIR$/controller/pom.xml" />
         <option value="$PROJECT_DIR$/rabbitmq-cli/pom.xml" />
+        <option value="$PROJECT_DIR$/xxl-job-test/pom.xml" />
       </set>
     </option>
   </component>

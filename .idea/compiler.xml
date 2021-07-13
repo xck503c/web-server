@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AjcSettings">
+    <option name="ajcPath" value="$MAVEN_REPOSITORY$/org/aspectj/aspectjtools/1.8.9/aspectjtools-1.8.9.jar" />
+    <option name="delegateToJavac" value="true" />
+  </component>
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -9,8 +14,7 @@
         <module name="back-service" />
         <module name="data-transfer-service" />
         <module name="java-demo-test" />
-        <module name="rocketmq-cli" />
-        <module name="Sharding-DB" />
+        <module name="mq" />
         <module name="sms-standard-protocol" />
         <module name="springboot-redis" />
       </profile>

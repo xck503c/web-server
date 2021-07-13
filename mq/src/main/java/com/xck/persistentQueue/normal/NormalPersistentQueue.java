@@ -57,14 +57,11 @@ public class NormalPersistentQueue<E extends Serializable> extends AbstractQueue
     public E poll() {
         E e = readBuff.poll();
         if (e == null){
-            e = writeBuffer.poll();
-            if (e == null){
-                readBufferThread.interrupt();
-                try {
-                    e = readBuff.take();
-                } catch (InterruptedException e1) {
-                    //
-                }
+            readBufferThread.interrupt();
+            try {
+                e = readBuff.take();
+            } catch (InterruptedException e1) {
+                //
             }
         }
         return e;
@@ -175,17 +172,17 @@ public class NormalPersistentQueue<E extends Serializable> extends AbstractQueue
             long lastFlushTime = System.currentTimeMillis();
             while (!isStop){
                 try{
-//                    boolean isExceedDealBatchSize = writeBuffer.size() >= dealbatchSize;
-////                    boolean isLongTimeNoFlush = (System.currentTimeMillis()-lastFlushTime)>writeTimeout;
-////                    boolean isFlush = isExceedDealBatchSize || isLongTimeNoFlush;
-////                    if (writeBuffer.isEmpty()){
-//////                        Thread.sleep(100);
-////                        continue;
-////                    }
-////                    if (!isFlush){
-//////                        Thread.sleep(100);
-////                        continue;
-////                    }
+                    boolean isExceedDealBatchSize = writeBuffer.size() >= dealbatchSize;
+                    boolean isLongTimeNoFlush = (System.currentTimeMillis()-lastFlushTime)>writeTimeout;
+                    boolean isFlush = isExceedDealBatchSize || isLongTimeNoFlush;
+                    if (writeBuffer.isEmpty()){
+                        Thread.sleep(100);
+                        continue;
+                    }
+                    if (!isFlush){
+                        Thread.sleep(100);
+                        continue;
+                    }
                     List<E> batchList = new ArrayList<>();
                     for (int i = 0; i < dealbatchSize; i++) {
                         E e = writeBuffer.take();
@@ -212,12 +209,12 @@ public class NormalPersistentQueue<E extends Serializable> extends AbstractQueue
                 try{
                     int remainSize = readBuff.remainingCapacity();
                     if (remainSize < dealbatchSize && writeSize.get()>0){
-//                        Thread.sleep(100);
+                        Thread.sleep(100);
                         continue;
                     }
                     List<E> list = read();
                     if (list == null || list.isEmpty()) {
-//                        Thread.sleep(100);
+                        Thread.sleep(100);
                         continue;
                     }
                     for (E e : list) {
